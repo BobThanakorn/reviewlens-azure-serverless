@@ -1,6 +1,6 @@
 # Tasks
 
-Current phase: **Phase 6 (web dashboard) next; Phase 5 CI/CD done; Phase 4 Terraform done (fmt, validate, tflint, checkov green; no plan possible without Azure). Phase 0 Azure checks (0.2-0.8) are still blocked on the Azure CLI install; Phases 1-3 were done meanwhile because they need no Azure.**
+Current phase: **DEPLOY PAUSE reached (Phases 1-6 done locally).** Phase 0 Azure checks (0.2-0.8) are still open because the Azure CLI is not installed; they must finish before deploy. Waiting for the user's "deploy".
 Status: DRAFT plan, awaiting approval. Tick a task only after its **Verify** step passes, then commit (Conventional Commits).
 Guard rails: DEPLOY PAUSE after Phase 6. No `git push`, `terraform apply` or resource-changing `az` command before the user writes "deploy". Max 20 reviews through a real classifier during development.
 
@@ -102,11 +102,11 @@ Guard rails: DEPLOY PAUSE after Phase 6. No `git push`, `terraform apply` or res
 
 ## Phase 6. Web dashboard
 
-- [ ] 6.1 `web/index.html`, `web/app.js`, `web/config.js.example` (Chart.js from CDN with pinned version + SRI).
-  Verify: opens locally against a mock API; no `innerHTML` on review text.
-- [ ] 6.2 Accessibility and error-state check (empty data, API down).
-  Verify: manual check in browser with mocked responses.
-- [ ] 6.3 Full local gate: ruff, pytest, terraform fmt/validate for all stacks, tflint, checkov.
+- [x] 6.1 `web/index.html`, `web/app.js`, `web/config.js.example` (Chart.js from CDN with pinned version + SRI).
+  Verify: ran `scripts/dev_server.py` (real API code, mock data) and screenshotted it in headless Edge; `tests/test_web.py` forbids `innerHTML`, inline scripts and unpinned Chart.js.
+- [x] 6.2 Accessibility and error-state check (empty data, API down).
+  Verify: loading, missing-config and populated states checked by screenshot; 390 px layout stacks to one column. Not tested: API returning errors for one panel only (code path exists).
+- [x] 6.3 Full local gate: ruff, pytest, terraform fmt/validate for all stacks, tflint, checkov.
   Verify: all green; `docs/spec/tasks.md` updated.
 
 >>> **DEPLOY PAUSE**: stop and wait for the user's "deploy". <<<

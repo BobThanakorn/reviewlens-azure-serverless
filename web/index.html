@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ReviewLens</title>
+    <meta
+      name="description"
+      content="Sentiment, topics and classifier accuracy for Thai restaurant reviews."
+    />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self' data:; connect-src 'self' https:; base-uri 'none'; form-action 'none'"
+    />
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div>
+        <h1>ReviewLens</h1>
+        <p class="subtitle">Thai restaurant reviews, classified by AI and checked against star ratings</p>
+      </div>
+      <div class="top-actions">
+        <span id="updated" class="muted" aria-live="polite"></span>
+        <button id="refresh" type="button">Refresh</button>
+      </div>
+    </header>
+
+    <div id="banner" class="banner" role="alert" hidden></div>
+
+    <main>
+      <section class="kpis" aria-label="Key figures">
+        <article class="kpi" id="kpi-total">
+          <h2>Reviews classified</h2>
+          <p class="kpi-value" data-value>–</p>
+          <p class="kpi-note muted" data-note>last 14 days</p>
+        </article>
+        <article class="kpi" id="kpi-negative">
+          <h2>Negative share</h2>
+          <p class="kpi-value" data-value>–</p>
+          <p class="kpi-note muted" data-note>of classified reviews</p>
+        </article>
+        <article class="kpi" id="kpi-accuracy">
+          <h2>Accuracy vs. stars</h2>
+          <p class="kpi-value" data-value>–</p>
+          <p class="kpi-note muted" data-note>stars 1-2 negative, 3 neutral, 4-5 positive</p>
+        </article>
+      </section>
+
+      <section class="grid">
+        <article class="card" id="panel-daily">
+          <h2>Daily sentiment</h2>
+          <p class="panel-status muted" data-status role="status">Loading…</p>
+          <div class="chart"><canvas id="chart-daily" role="img" aria-label="Daily sentiment chart"></canvas></div>
+        </article>
+
+        <article class="card" id="panel-topics">
+          <h2>Topics</h2>
+          <p class="panel-status muted" data-status role="status">Loading…</p>
+          <div class="chart"><canvas id="chart-topics" role="img" aria-label="Topic chart"></canvas></div>
+        </article>
+      </section>
+
+      <section class="card" id="panel-negative">
+        <h2>Latest negative reviews</h2>
+        <p class="panel-status muted" data-status role="status">Loading…</p>
+        <div class="table-wrap">
+          <table id="negative-table" hidden>
+            <thead>
+              <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Stars</th>
+                <th scope="col">Topic</th>
+                <th scope="col">Summary</th>
+                <th scope="col">Review</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer class="muted">
+      Data: Wongnai reviews dataset (LGPL-3.0), sample of 500 reviews. Labels are model output and may be wrong.
+    </footer>
+
+    <script src="config.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/chart.js@4.6.2/dist/chart.umd.min.js"
+      integrity="sha384-wFIO1nJgUOP2XDesMi2Xqyej8+jLnzOfBrJbdvz7Pp+UI88xOiL08fKFupi2KqR0"
+      crossorigin="anonymous"
+    ></script>
+    <script src="app.js"></script>
+  </body>
+</html>

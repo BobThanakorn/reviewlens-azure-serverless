@@ -79,6 +79,11 @@ def cmd_test(args: argparse.Namespace) -> int:
     return run([venv_python(), "-m", "pytest", *args.pytest_args])
 
 
+def cmd_dev(args: argparse.Namespace) -> int:
+    """Serve the dashboard locally against mock data (no Azure)."""
+    return run_script("dev_server.py", "--port", str(args.port))
+
+
 def cmd_checkov(_: argparse.Namespace) -> int:
     """Run checkov from its own venv (it pins libraries that conflict with pytest)."""
     venv = ROOT / ".venv-checkov"
@@ -147,6 +152,8 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("lint", help="ruff + terraform fmt -check + validate")
     p = sub.add_parser("test", help="run pytest with coverage gate")
     p.add_argument("pytest_args", nargs="*")
+    p = sub.add_parser("dev", help="dashboard on mock data at http://127.0.0.1:PORT (no Azure)")
+    p.add_argument("--port", type=int, default=8000)
     sub.add_parser("checkov", help="security scan of terraform/ (isolated venv)")
     sub.add_parser("plan", help="terraform plan for envs/dev")
     p = sub.add_parser("deploy", help="terraform apply for envs/dev, then deploy function code")
@@ -168,6 +175,7 @@ HANDLERS = {
     "fmt": cmd_fmt,
     "lint": cmd_lint,
     "test": cmd_test,
+    "dev": cmd_dev,
     "checkov": cmd_checkov,
     "plan": cmd_plan,
     "deploy": cmd_deploy,

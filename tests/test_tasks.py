@@ -4,7 +4,8 @@ import tasks
 def test_parser_lists_every_documented_subcommand():
     parser = tasks.build_parser()
     expected = {
-        "init", "fmt", "lint", "test", "checkov", "plan", "deploy", "deploy-functions",
+        "init", "fmt", "lint", "test", "checkov",
+        "dev", "plan", "deploy", "deploy-functions",
         "bootstrap-data", "backfill", "smoke-test", "evaluate", "destroy",
     }  # fmt: skip
     assert expected == set(tasks.HANDLERS)
