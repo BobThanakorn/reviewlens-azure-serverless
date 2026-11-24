@@ -1,6 +1,6 @@
 # Tasks
 
-Current phase: **Phase 4 (Terraform) in progress. Phase 0 Azure checks (0.2-0.8) are still blocked on the Azure CLI install; Phases 1-3 were done meanwhile because they need no Azure.**
+Current phase: **Phase 5 (CI/CD) next; Phase 4 Terraform done (fmt, validate, tflint, checkov green; no plan possible without Azure). Phase 0 Azure checks (0.2-0.8) are still blocked on the Azure CLI install; Phases 1-3 were done meanwhile because they need no Azure.**
 Status: DRAFT plan, awaiting approval. Tick a task only after its **Verify** step passes, then commit (Conventional Commits).
 Guard rails: DEPLOY PAUSE after Phase 6. No `git push`, `terraform apply` or resource-changing `az` command before the user writes "deploy". Max 20 reviews through a real classifier during development.
 
@@ -72,21 +72,21 @@ Guard rails: DEPLOY PAUSE after Phase 6. No `git push`, `terraform apply` or res
 
 - [x] 4.1 `terraform/bootstrap`: RGs, state storage (versioned, TLS-only, Entra auth), 2 UAMIs, federated credentials, role assignments, outputs (client IDs, tenant, subscription).
   Verify: `terraform fmt -check`, `terraform init -backend=false`, `terraform validate`.
-- [ ] 4.2 `modules/storage` (data + web accounts, containers, queues, soft delete, README).
+- [x] 4.2 `modules/storage` (data + web accounts, containers, queues, soft delete, README).
   Verify: fmt, validate.
-- [ ] 4.3 `modules/functions` (two apps, plan, identities, app settings, role assignments, README).
+- [x] 4.3 `modules/functions` (two apps, plan, identities, app settings, role assignments, README).
   Verify: fmt, validate.
-- [ ] 4.4 `modules/eventing` (system topic, subscription with subject filter, MI delivery role, README).
+- [x] 4.4 `modules/eventing` (system topic, subscription with subject filter, MI delivery role, README).
   Verify: fmt, validate.
-- [ ] 4.5 `modules/monitoring` (workspace, App Insights, action group, 3 alerts, workbook, budget if supported, README).
+- [x] 4.5 `modules/monitoring` (workspace, App Insights, action group, 3 alerts, workbook, budget if supported, README).
   Verify: fmt, validate.
-- [ ] 4.6 `modules/web` (static website, `config.js` render, README).
+- [x] 4.6 `modules/web` (static website, `config.js` render, README).
   Verify: fmt, validate.
-- [ ] 4.7 `envs/dev` (main, backend, variables, outputs, `terraform.tfvars.example`).
+- [x] 4.7 `envs/dev` (main, backend, variables, outputs, `terraform.tfvars.example`).
   Verify: fmt, `init -backend=false`, validate.
-- [ ] 4.8 tflint (azurerm ruleset) and checkov clean; each skip justified inline. Install tflint locally if the user agrees.
+- [x] 4.8 tflint (azurerm ruleset) and checkov clean; each skip justified inline. Install tflint locally if the user agrees.
   Verify: both exit 0.
-- [ ] 4.9 ADRs 001-006 and any changed decision (section 11 of design.md).
+- [x] 4.9 ADRs 001-006 and any changed decision (section 11 of design.md).
   Verify: files exist and are linked from the design.
 
 ## Phase 5. CI/CD

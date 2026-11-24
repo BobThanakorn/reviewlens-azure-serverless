@@ -121,9 +121,9 @@ Business logic lives in plain modules; `function_app.py` stays a thin binding la
 | func-pipeline MI | Storage Blob Data Contributor | data account |
 | func-pipeline MI | Storage Queue Data Contributor | data account |
 | func-pipeline MI | Cognitive Services OpenAI User (if `openai`) / Cognitive Services User (if `language`) | the AI account |
-| func-pipeline MI | Storage Blob Data Contributor | its deployment container (Flex) |
+| func-pipeline MI | Storage Blob Data Owner + Queue Data Contributor | its own host/deployment storage account (no business data) |
 | func-api MI | Storage Blob Data Reader | `processed` container only |
-| func-api MI | Storage Blob Data Contributor | its own deployment container (Flex) |
+| func-api MI | Storage Blob Data Owner + Queue Data Contributor | its own host/deployment storage account (no business data) |
 | Event Grid system topic MI | Storage Queue Data Message Sender | `enrich` queue (managed-identity delivery) |
 | Deploying user (var) | Storage Blob Data Contributor | `source` container (for `bootstrap_data.py`, since Owner has no data actions) |
 | GitHub apply MI | Contributor + User Access Administrator | app RG only |
@@ -176,7 +176,9 @@ terraform/modules/          storage, functions, eventing, monitoring, web (+ ai 
 | a | Event Grid "subject prefix raw/" | `subject_begins_with = /blobServices/default/containers/raw/` | Blob event subjects include the container path |
 | b | Plan identity: "read on state" | Use `terraform plan -lock=false` with Reader + Blob Data Reader | The azurerm backend takes a blob lease to lock, which needs write access; avoid giving PR runs write on state |
 | c | Timer 08:00 Bangkok | UTC cron `0 0 1 * * *` | Flex Consumption does not support `WEBSITE_TIME_ZONE` (**VERIFY**) |
-| d | Static site account | Possibly keep shared-key access enabled on the web account only | Static website provisioning/upload may require data-plane shared-key; checkov skip with justification (**VERIFY**, alternative azapi + Entra upload) |
+| d | Static site account | Shared keys stay **disabled** here too; static website set up with Entra auth (`storage_use_azuread`), anonymous read allowed on this account only | Implemented that way (ADR 008). **Unverified until first deploy**; fallback is enabling shared-key access on the web account only |
+| g | One apps' identity type unspecified | User-assigned identity per Function App | Flex needs roles before the app exists (ADR 007) |
+| h | Poison alert via queue metric | KQL alert on the host's "MaxDequeueCount ... poison" trace | Storage queue metrics are account-wide, not per queue |
 | e | UAA on apply identity | Add ABAC condition restricting assignable roles | Stops privilege escalation within the RG |
 | f | Anonymous API | Anonymous + CORS only for the web origin | Public read-only data; ADR 005 documents trade-off |
 

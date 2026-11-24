@@ -1,0 +1,13 @@
+# Copy to terraform.tfvars (git-ignored). Never commit the real file.
+location            = "southeastasia" # an allowed region that supports Flex Consumption, see docs/feasibility.md
+alert_email         = "you@example.com"
+classifier_provider = "language" # or "openai"; decided in docs/adr/000-ai-provider.md
+
+# Object ids that may use Entra auth against the data account (find yours with
+# `az ad signed-in-user show --query id -o tsv`; the CI apply identity id comes from the
+# bootstrap output principal_id_apply).
+data_admin_object_ids = []
+
+# Turn on only after docs/feasibility.md confirms budgets work on this subscription.
+enable_budget      = false
+monthly_budget_usd = 20

@@ -40,3 +40,7 @@ Thumbs.db
 
 # Claude Code local overrides
 .claude/settings.local.json
+
+# Terraform backend values (account name is subscription specific)
+backend.hcl
+.tools/

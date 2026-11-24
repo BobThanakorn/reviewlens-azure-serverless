@@ -21,6 +21,7 @@ locals {
   # Anything else is refused by the ABAC condition below, so a compromised pipeline cannot
   # grant itself Owner. Verify with: az role definition list --name "<role name>" --query [].name
   assignable_role_ids = [
+    "b7e6dc6d-f1e8-4753-8033-0f276bb0955b", # Storage Blob Data Owner (Functions host storage)
     "ba92f5b4-2d11-453d-a403-e96b0029c9fe", # Storage Blob Data Contributor
     "2a2b9908-6ea1-4ae2-8e65-a410df84e7d1", # Storage Blob Data Reader
     "974c5e8b-45b9-4653-ba55-5f855dd0fb88", # Storage Queue Data Contributor
@@ -69,13 +70,12 @@ resource "azurerm_resource_group" "app" {
 
 # ---------------------------------------------------------------- Terraform state
 
-#checkov:skip=CKV_AZURE_206:LRS is enough for a portfolio project; state is versioned and soft-deleted
-#checkov:skip=CKV_AZURE_59:Public network access stays on so GitHub-hosted runners can reach the state; access needs Entra auth
-#checkov:skip=CKV2_AZURE_1:Microsoft-managed keys are acceptable here; CMK is listed under production next steps
-#checkov:skip=CKV2_AZURE_33:No private endpoint: it would add always-on cost
-#checkov:skip=CKV_AZURE_33:Queue logging is irrelevant, this account has no queues
-#checkov:skip=CKV2_AZURE_21:Blob read logging needs a log workspace that does not exist yet at bootstrap time
 resource "azurerm_storage_account" "state" {
+  #checkov:skip=CKV_AZURE_59:Public network access stays on: Functions and GitHub runners have no VNet; access needs Entra auth, shared keys are disabled and anonymous blob access is off
+  #checkov:skip=CKV_AZURE_33:Queue request logging needs diagnostic settings and log ingestion cost; listed under production next steps
+  #checkov:skip=CKV_AZURE_206:LRS is enough for a re-creatable dev environment; geo-replication would double storage cost
+  #checkov:skip=CKV2_AZURE_1:Microsoft-managed keys are acceptable here; customer-managed keys need Key Vault, listed under production next steps
+  #checkov:skip=CKV2_AZURE_33:Private endpoints add always-on hourly cost, which this project forbids
   name                = local.state_account_name
   resource_group_name = azurerm_resource_group.state.name
   location            = azurerm_resource_group.state.location
@@ -105,6 +105,7 @@ resource "azurerm_storage_account" "state" {
 }
 
 resource "azurerm_storage_container" "state" {
+  #checkov:skip=CKV2_AZURE_21:Blob read logging needs diagnostic settings and log ingestion cost; listed under production next steps
   name                  = local.state_container
   storage_account_id    = azurerm_storage_account.state.id
   container_access_type = "private"

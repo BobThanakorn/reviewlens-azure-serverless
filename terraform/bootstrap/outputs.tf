@@ -37,3 +37,8 @@ output "app_resource_group_name" {
   description = "Resource group that envs/dev deploys into."
   value       = azurerm_resource_group.app.name
 }
+
+output "principal_id_apply" {
+  description = "Object id of the apply identity. Add it to data_admin_object_ids so CI can read data for the smoke test."
+  value       = azurerm_user_assigned_identity.apply.principal_id
+}
