@@ -1,6 +1,6 @@
 # Tasks
 
-Current phase: **DEPLOY PAUSE reached (Phases 1-6 done locally).** Phase 0 Azure checks (0.2-0.8) are still open because the Azure CLI is not installed; they must finish before deploy. Waiting for the user's "deploy".
+Current phase: **DEPLOY PAUSE reached (Phases 1-6 done locally).** Phase 0 Azure checks (0.2-0.8) are still open because the Azure CLI is not installed; they must finish before deploy. Remaining Phase 0 work: 0.5/0.6/0.8 (OpenAI deployment test needs the user's OK). Then wait for the user's "deploy".
 Status: DRAFT plan, awaiting approval. Tick a task only after its **Verify** step passes, then commit (Conventional Commits).
 Guard rails: DEPLOY PAUSE after Phase 6. No `git push`, `terraform apply` or resource-changing `az` command before the user writes "deploy". Max 20 reviews through a real classifier during development.
 
@@ -8,17 +8,17 @@ Guard rails: DEPLOY PAUSE after Phase 6. No `git push`, `terraform apply` or res
 
 - [x] 0.1 Check tools: git 2.54, terraform 1.17.2, python 3.12.10, PowerShell 7.7, gh present. **Missing: az, tflint.**
   Verify: output recorded in `docs/feasibility.md`.
-- [ ] 0.2 User installs Azure CLI (`winget install -e --id Microsoft.AzureCLI`), reopens the terminal, runs `az login` and selects the Students subscription.
+- [x] 0.2 User installs Azure CLI (`winget install -e --id Microsoft.AzureCLI`), reopens the terminal, runs `az login` and selects the Students subscription.
   Verify: `az version` works; `az account show` shows the subscription name (shown to the user before anything else).
-- [ ] 0.3 Subscription type, allowed regions (Azure Policy "Allowed resource deployment regions"), registered resource providers. Read-only. Never write the subscription ID into a file.
+- [x] 0.3 Subscription type, allowed regions (Azure Policy "Allowed resource deployment regions"), registered resource providers. Read-only. Never write the subscription ID into a file.
   Verify: `docs/feasibility.md` section 1 filled with real output (ID masked).
-- [ ] 0.4 Functions hosting availability in the chosen region (Flex Consumption vs Consumption), plus Python runtime version and Flex timer/time-zone behaviour in current docs.
+- [x] 0.4 Functions hosting availability in the chosen region (Flex Consumption vs Consumption), plus Python runtime version and Flex timer/time-zone behaviour in current docs.
   Verify: section 2 filled; region chosen.
 - [ ] 0.5 Azure OpenAI/Foundry: list models and quota in the region (read-only). Only with user OK per resource: create a temporary account, try a small deployment and one Thai review, delete immediately.
   Verify: section 3 has real result (success or exact error code, e.g. RequestDisallowedByAzure); `az resource list` confirms no leftovers.
 - [ ] 0.6 If 0.5 fails: Azure AI Language sentiment with a Thai text (confirm Thai support in current docs; prefer the free tier; same ask-first/delete rule).
   Verify: section 4 filled.
-- [ ] 0.7 Consumption budget support check (read-only).
+- [x] 0.7 Consumption budget support check (read-only).
   Verify: section 5 filled.
 - [ ] 0.8 Decide provider (`openai` | `language`), write `docs/adr/000-ai-provider.md`; report to the user in Thai.
   Verify: ADR exists; `docs/feasibility.md` complete.
