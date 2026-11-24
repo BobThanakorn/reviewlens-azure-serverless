@@ -1,0 +1,53 @@
+name: Destroy
+
+# Removes the dev environment only (terraform/envs/dev). The bootstrap stack, its state and the
+# CI identities stay, so the environment can be rebuilt by running the Deploy workflow.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "destroy" to confirm'
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  destroy:
+    name: Destroy dev environment
+    # Guard: any other value skips the job, so a mistyped run changes nothing.
+    if: github.event.inputs.confirm == 'destroy'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      TF_VAR_location: ${{ vars.AZURE_LOCATION }}
+      TF_VAR_classifier_provider: ${{ vars.CLASSIFIER_PROVIDER || 'language' }}
+      TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
+      TF_VAR_data_admin_object_ids: ${{ secrets.DATA_ADMIN_OBJECT_IDS || '[]' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: azure/login@v3
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID_APPLY }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_wrapper: false
+      - name: Terraform init
+        working-directory: terraform/envs/dev
+        run: |
+          terraform init -input=false \
+            -backend-config="resource_group_name=${{ vars.TFSTATE_RESOURCE_GROUP }}" \
+            -backend-config="storage_account_name=${{ vars.TFSTATE_STORAGE_ACCOUNT }}"
+      - name: Terraform destroy
+        working-directory: terraform/envs/dev
+        run: terraform destroy -input=false -auto-approve

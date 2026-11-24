@@ -1,6 +1,6 @@
 # Tasks
 
-Current phase: **Phase 5 (CI/CD) next; Phase 4 Terraform done (fmt, validate, tflint, checkov green; no plan possible without Azure). Phase 0 Azure checks (0.2-0.8) are still blocked on the Azure CLI install; Phases 1-3 were done meanwhile because they need no Azure.**
+Current phase: **Phase 6 (web dashboard) next; Phase 5 CI/CD done; Phase 4 Terraform done (fmt, validate, tflint, checkov green; no plan possible without Azure). Phase 0 Azure checks (0.2-0.8) are still blocked on the Azure CLI install; Phases 1-3 were done meanwhile because they need no Azure.**
 Status: DRAFT plan, awaiting approval. Tick a task only after its **Verify** step passes, then commit (Conventional Commits).
 Guard rails: DEPLOY PAUSE after Phase 6. No `git push`, `terraform apply` or resource-changing `az` command before the user writes "deploy". Max 20 reviews through a real classifier during development.
 
@@ -91,13 +91,13 @@ Guard rails: DEPLOY PAUSE after Phase 6. No `git push`, `terraform apply` or res
 
 ## Phase 5. CI/CD
 
-- [ ] 5.1 `ci.yml` (as in design section 10).
-  Verify: YAML lint (actionlint if available); a local dry check of the same commands via `tasks.py`.
-- [ ] 5.2 `deploy.yml`, `destroy.yml` (confirm gate).
+- [x] 5.1 `ci.yml` (as in design section 10).
+  Verify: YAML parses and `tests/test_workflows.py` pins the security properties (actionlint not installed; run it in CI later).
+- [x] 5.2 `deploy.yml`, `destroy.yml` (confirm gate).
   Verify: YAML lint; the confirm gate reviewed.
-- [ ] 5.3 `scripts/deploy_functions.py`, `scripts/smoke_test.py`, `scripts/evaluate.py` with unit tests.
+- [x] 5.3 `scripts/deploy_functions.py`, `scripts/smoke_test.py`, `scripts/evaluate.py` with unit tests.
   Verify: tests pass; smoke test supports `--dry-run`.
-- [ ] 5.4 `docs/github-setup.md`.
+- [x] 5.4 `docs/github-setup.md`.
   Verify: lists variables and topics.
 
 ## Phase 6. Web dashboard

@@ -18,6 +18,11 @@ output "api_app_name" {
   value       = module.func_api.app_name
 }
 
+output "pipeline_hostname" {
+  description = "Default host name of func-pipeline (admin backfill endpoint)."
+  value       = module.func_pipeline.default_hostname
+}
+
 output "resource_group_name" {
   description = "Resource group of the environment."
   value       = local.rg

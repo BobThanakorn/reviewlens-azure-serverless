@@ -6,3 +6,4 @@ ruff==0.17.6
 pre-commit==4.7.0
 datasets==5.2.0            # scripts/bootstrap_data.py only
 azure-storage-queue==12.18.1  # scripts/smoke_test.py (poison queue check)
+pyyaml==6.0.4  # tests/test_workflows.py
