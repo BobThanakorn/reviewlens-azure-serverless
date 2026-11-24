@@ -1,0 +1,3 @@
+# Checkov lives in its own virtual environment (.venv-checkov) because it pins old versions of
+# shared libraries (e.g. packaging<24) that conflict with pytest in the main .venv.
+checkov==3.4.10

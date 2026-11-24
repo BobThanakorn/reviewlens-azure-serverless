@@ -1,0 +1,42 @@
+# Python
+.venv*/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+crash.log
+crash.*.log
+.terraform.tfstate.lock.info
+tfplan
+*.tfplan
+
+# Secrets / local config
+.env
+.env.*
+local.settings.json
+*.pem
+*.key
+
+# Generated at deploy time (contains the API URL)
+web/config.js
+.deploy/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Claude Code local overrides
+.claude/settings.local.json

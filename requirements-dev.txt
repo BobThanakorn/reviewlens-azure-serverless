@@ -1,0 +1,8 @@
+# Developer and CI tooling (pinned). Function App runtime deps are in requirements.txt.
+-r requirements.txt
+pytest==9.2.0
+pytest-cov==7.1.0
+ruff==0.17.6
+pre-commit==4.7.0
+datasets==5.2.0            # scripts/bootstrap_data.py only
+azure-storage-queue==12.18.1  # scripts/smoke_test.py (poison queue check)

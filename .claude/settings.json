@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(terraform destroy *)",
+      "Bash(terraform apply -destroy *)",
+      "Bash(az group delete *)",
+      "Bash(az role assignment delete *)",
+      "Bash(az account upgrade *)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(git push --force-with-lease *)",
+      "PowerShell(terraform destroy *)",
+      "PowerShell(terraform apply -destroy *)",
+      "PowerShell(az group delete *)",
+      "PowerShell(az role assignment delete *)",
+      "PowerShell(az account upgrade *)",
+      "PowerShell(git push --force *)",
+      "PowerShell(git push -f *)",
+      "PowerShell(git push --force-with-lease *)"
+    ],
+    "ask": [
+      "Bash(terraform apply *)",
+      "Bash(git push *)",
+      "PowerShell(terraform apply *)",
+      "PowerShell(git push *)"
+    ]
+  }
+}
