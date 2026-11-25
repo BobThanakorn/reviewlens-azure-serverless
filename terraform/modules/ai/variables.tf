@@ -42,19 +42,19 @@ variable "openai_deployment_name" {
 }
 
 variable "openai_model_name" {
-  description = "Model to deploy. PLACEHOLDER: confirm availability and quota in docs/feasibility.md."
+  description = "Model to deploy. Tested in Phase 0 (docs/feasibility.md)."
   type        = string
-  default     = "gpt-4o-mini"
+  default     = "gpt-5-nano"
 }
 
 variable "openai_model_version" {
-  description = "Model version. PLACEHOLDER: confirm in docs/feasibility.md."
+  description = "Model version. Tested in Phase 0."
   type        = string
-  default     = "2024-07-18"
+  default     = "2025-08-07"
 }
 
 variable "openai_deployment_sku" {
-  description = "Deployment SKU, for example Standard or GlobalStandard. PLACEHOLDER: depends on region and quota."
+  description = "Deployment SKU, for example Standard or GlobalStandard. GlobalStandard has quota in southeastasia."
   type        = string
   default     = "GlobalStandard"
 }
@@ -62,7 +62,7 @@ variable "openai_deployment_sku" {
 variable "openai_capacity" {
   description = "Deployment capacity in thousands of tokens per minute. Keep small to cap cost."
   type        = number
-  default     = 10
+  default     = 50
 }
 
 variable "tags" {

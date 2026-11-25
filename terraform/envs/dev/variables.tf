@@ -30,7 +30,7 @@ variable "alert_email" {
 variable "classifier_provider" {
   description = "AI provider: openai or language (decision in docs/adr/000-ai-provider.md)."
   type        = string
-  default     = "language"
+  default     = "openai"
 
   validation {
     condition     = contains(["openai", "language"], var.classifier_provider)
@@ -75,25 +75,31 @@ variable "budget_start_date" {
 }
 
 variable "openai_model_name" {
-  description = "OpenAI model to deploy when classifier_provider = openai. PLACEHOLDER until Phase 0."
+  description = "OpenAI model to deploy when classifier_provider = openai (tested in Phase 0, ADR 000)."
   type        = string
-  default     = "gpt-4o-mini"
+  default     = "gpt-5-nano"
 }
 
 variable "openai_model_version" {
-  description = "OpenAI model version. PLACEHOLDER until Phase 0."
+  description = "OpenAI model version (tested in Phase 0)."
   type        = string
-  default     = "2024-07-18"
+  default     = "2025-08-07"
 }
 
 variable "openai_deployment_sku" {
-  description = "OpenAI deployment SKU. PLACEHOLDER until Phase 0."
+  description = "OpenAI deployment SKU. GlobalStandard has quota in southeastasia (docs/feasibility.md)."
   type        = string
   default     = "GlobalStandard"
 }
 
 variable "openai_capacity" {
-  description = "OpenAI deployment capacity (thousand tokens per minute)."
+  description = "Capacity in thousand tokens per minute. Set it right at creation: changing it later did not take effect at the gateway in Phase 0 (docs/runbook.md)."
   type        = number
-  default     = 10
+  default     = 50
+}
+
+variable "openai_reasoning_effort" {
+  description = "reasoning_effort sent to gpt-5 models. minimal cut output from ~1,700 to ~50 tokens per review in Phase 0."
+  type        = string
+  default     = "minimal"
 }

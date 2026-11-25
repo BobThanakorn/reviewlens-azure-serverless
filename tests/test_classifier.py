@@ -97,6 +97,22 @@ def test_openai_invalid_twice_gives_unknown_invalid_output():
     assert client.chat.completions.create.call_count == 2
 
 
+def test_openai_request_uses_gpt5_compatible_parameters():
+    clf, client = make_openai(completion(GOOD))
+    clf.classify("x")
+    kwargs = client.chat.completions.create.call_args.kwargs
+    assert "temperature" not in kwargs and "max_tokens" not in kwargs  # gpt-5 rejects both
+    assert kwargs["max_completion_tokens"] == c.MAX_COMPLETION_TOKENS
+    assert "reasoning_effort" not in kwargs
+    assert kwargs["response_format"] == {"type": "json_object"}
+
+
+def test_openai_reasoning_effort_is_sent_only_when_configured():
+    clf, client = make_openai(completion(GOOD), reasoning_effort="minimal")
+    clf.classify("x")
+    assert client.chat.completions.create.call_args.kwargs["reasoning_effort"] == "minimal"
+
+
 def test_openai_retries_429_then_succeeds():
     clf, client = make_openai(Throttled(), Throttled(), completion(GOOD))
     assert clf.classify("x").status == "ok"
@@ -216,8 +232,16 @@ def test_settings_reject_unknown_provider():
 
 def test_settings_default_and_values():
     assert Settings.from_env({}).classifier_provider == "language"
-    s = Settings.from_env({"CLASSIFIER_PROVIDER": " OpenAI ", "OPENAI_ENDPOINT": "https://x"})
+    s = Settings.from_env(
+        {
+            "CLASSIFIER_PROVIDER": " OpenAI ",
+            "OPENAI_ENDPOINT": "https://x",
+            "OPENAI_REASONING_EFFORT": " Minimal ",
+        }
+    )
     assert (s.classifier_provider, s.openai_endpoint) == ("openai", "https://x")
+    assert s.openai_reasoning_effort == "minimal"
+    assert s.openai_api_version == "2025-04-01-preview"
 
 
 # ---- prompt

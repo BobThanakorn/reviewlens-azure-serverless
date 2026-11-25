@@ -94,8 +94,9 @@ module "func_pipeline" {
       CLASSIFIER_PROVIDER = var.classifier_provider
     },
     local.use_openai ? {
-      OPENAI_ENDPOINT   = module.ai.endpoint
-      OPENAI_DEPLOYMENT = module.ai.deployment_name
+      OPENAI_ENDPOINT         = module.ai.endpoint
+      OPENAI_DEPLOYMENT       = module.ai.deployment_name
+      OPENAI_REASONING_EFFORT = var.openai_reasoning_effort
       } : {
       LANGUAGE_ENDPOINT = module.ai.endpoint
     },

@@ -19,7 +19,8 @@ class Settings:
     classifier_provider: str = "language"
     openai_endpoint: str = ""
     openai_deployment: str = ""
-    openai_api_version: str = "2024-10-21"
+    openai_api_version: str = "2025-04-01-preview"  # needed for reasoning_effort
+    openai_reasoning_effort: str = ""
     language_endpoint: str = ""
     web_origin: str = ""
     max_attempts: int = 5
@@ -36,6 +37,7 @@ class Settings:
             openai_endpoint=env.get("OPENAI_ENDPOINT", ""),
             openai_deployment=env.get("OPENAI_DEPLOYMENT", ""),
             openai_api_version=env.get("OPENAI_API_VERSION", cls.openai_api_version),
+            openai_reasoning_effort=env.get("OPENAI_REASONING_EFFORT", "").strip().lower(),
             language_endpoint=env.get("LANGUAGE_ENDPOINT", ""),
             web_origin=env.get("WEB_ORIGIN", ""),
         )

@@ -1,6 +1,6 @@
 # Tasks
 
-Current phase: **DEPLOY PAUSE reached (Phases 1-6 done locally).** Phase 0 Azure checks (0.2-0.8) are still open because the Azure CLI is not installed; they must finish before deploy. Remaining Phase 0 work: 0.5/0.6/0.8 (OpenAI deployment test needs the user's OK). Then wait for the user's "deploy".
+Current phase: **DEPLOY PAUSE reached (Phases 1-6 done locally).** Phase 0 is complete (provider: openai, gpt-5-nano, southeastasia). Wait for the user's "deploy".
 Status: DRAFT plan, awaiting approval. Tick a task only after its **Verify** step passes, then commit (Conventional Commits).
 Guard rails: DEPLOY PAUSE after Phase 6. No `git push`, `terraform apply` or resource-changing `az` command before the user writes "deploy". Max 20 reviews through a real classifier during development.
 
@@ -14,13 +14,13 @@ Guard rails: DEPLOY PAUSE after Phase 6. No `git push`, `terraform apply` or res
   Verify: `docs/feasibility.md` section 1 filled with real output (ID masked).
 - [x] 0.4 Functions hosting availability in the chosen region (Flex Consumption vs Consumption), plus Python runtime version and Flex timer/time-zone behaviour in current docs.
   Verify: section 2 filled; region chosen.
-- [ ] 0.5 Azure OpenAI/Foundry: list models and quota in the region (read-only). Only with user OK per resource: create a temporary account, try a small deployment and one Thai review, delete immediately.
+- [x] 0.5 Azure OpenAI/Foundry: list models and quota in the region (read-only). Only with user OK per resource: create a temporary account, try a small deployment and one Thai review, delete immediately.
   Verify: section 3 has real result (success or exact error code, e.g. RequestDisallowedByAzure); `az resource list` confirms no leftovers.
-- [ ] 0.6 If 0.5 fails: Azure AI Language sentiment with a Thai text (confirm Thai support in current docs; prefer the free tier; same ask-first/delete rule).
+- [x] 0.6 If 0.5 fails: Azure AI Language sentiment with a Thai text (confirm Thai support in current docs; prefer the free tier; same ask-first/delete rule).
   Verify: section 4 filled.
 - [x] 0.7 Consumption budget support check (read-only).
   Verify: section 5 filled.
-- [ ] 0.8 Decide provider (`openai` | `language`), write `docs/adr/000-ai-provider.md`; report to the user in Thai.
+- [x] 0.8 Decide provider (`openai` | `language`), write `docs/adr/000-ai-provider.md`; report to the user in Thai.
   Verify: ADR exists; `docs/feasibility.md` complete.
 
 ## Phase 1. Scaffolding
@@ -63,7 +63,7 @@ Guard rails: DEPLOY PAUSE after Phase 6. No `git push`, `terraform apply` or res
   Verify: import test; host.json asserted by a test.
 - [x] 3.7 `src/api`: aggregation, validation, 4 routes, CORS, de-dup, error JSON; `function_app.py`.
   Verify: tests for each route, whitelist violations, empty data, confusion matrix correctness.
-- [ ] 3.8 Local smoke of classifier against `sample-data/sample.jsonl` (<= 20 reviews) **only after the user confirms** and only if a provider exists. **Waiting on Phase 0 (provider) and the user's OK.**
+- [x] 3.8 Local smoke of classifier against `sample-data/sample.jsonl` (<= 20 reviews) **only after the user confirms** and only if a provider exists. **Waiting on Phase 0 (provider) and the user's OK.**
   Verify: output logged; token usage noted.
 - [x] 3.9 Quality gate.
   Verify: `ruff check`, `pytest` coverage >= 80% for `src/`.

@@ -18,6 +18,7 @@ T = TypeVar("T")
 STATUS_OK = "ok"
 STATUS_INVALID = "invalid_output"
 LANGUAGE_TEXT_LIMIT = 5000  # Azure AI Language rejects records over 5,120 characters
+MAX_COMPLETION_TOKENS = 800  # Azure reserves TPM quota from this value; minimal effort needs ~50
 
 
 @dataclass(frozen=True)
@@ -117,6 +118,8 @@ class OpenAIClassifier:
         retry_nudge: str,
         max_attempts: int = 5,
         sleep: Callable[[float], None] = time.sleep,
+        reasoning_effort: str = "",
+        max_completion_tokens: int = MAX_COMPLETION_TOKENS,
     ) -> None:
         self._client = client
         self.model = deployment
@@ -124,15 +127,21 @@ class OpenAIClassifier:
         self._retry_nudge = retry_nudge
         self._max_attempts = max_attempts
         self._sleep = sleep
+        self._extra: dict[str, Any] = {"max_completion_tokens": max_completion_tokens}
+        # Only reasoning models (gpt-5 family) accept this; empty means "do not send it".
+        if reasoning_effort:
+            self._extra["reasoning_effort"] = reasoning_effort
 
     def _complete(self, messages: list[dict[str, str]]) -> tuple[str, int, int]:
+        # No temperature: gpt-5 models reject anything but the default (found in Phase 0).
+        # max_completion_tokens replaces max_tokens, which gpt-5 models reject. Reasoning
+        # tokens count toward it, so the budget is much larger than the visible JSON needs.
         def call():
             return self._client.chat.completions.create(
                 model=self.model,
                 messages=messages,
-                temperature=0,
-                max_tokens=300,
                 response_format={"type": "json_object"},
+                **self._extra,
             )
 
         response = call_with_backoff(call, max_attempts=self._max_attempts, sleep=self._sleep)
@@ -250,7 +259,12 @@ def get_classifier(settings: Settings) -> Classifier:
             max_retries=0,  # retries are handled by call_with_backoff
         )
         return OpenAIClassifier(
-            client, settings.openai_deployment, build_messages, RETRY_NUDGE, settings.max_attempts
+            client,
+            settings.openai_deployment,
+            build_messages,
+            RETRY_NUDGE,
+            settings.max_attempts,
+            reasoning_effort=settings.openai_reasoning_effort,
         )
     if settings.classifier_provider == "language":
         settings.require("language_endpoint")

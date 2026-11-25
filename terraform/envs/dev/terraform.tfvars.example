@@ -1,7 +1,7 @@
 # Copy to terraform.tfvars (git-ignored). Never commit the real file.
 location            = "southeastasia" # an allowed region that supports Flex Consumption, see docs/feasibility.md
 alert_email         = "you@example.com"
-classifier_provider = "language" # or "openai"; decided in docs/adr/000-ai-provider.md
+classifier_provider = "openai" # tested in Phase 0, see docs/adr/000-ai-provider.md
 
 # Object ids that may use Entra auth against the data account (find yours with
 # `az ad signed-in-user show --query id -o tsv`; the CI apply identity id comes from the

@@ -33,3 +33,33 @@ Status: incidents are added as they happen during the build. Operating procedure
 - **Root cause:** major provider upgrade. Containers and queues take `storage_account_id` (management-plane), static website is a separate resource, and Flex Consumption uses `azurerm_function_app_flex_consumption`.
 - **Fix:** resource arguments were read from the provider schema (`terraform providers schema -json`) instead of from memory.
 - **Prevention:** `required_providers` pins exact versions; upgrades are a deliberate change.
+
+### 6. `BadRequestError: Unsupported parameter: 'max_tokens'` from gpt-5
+- **Symptom:** every classification failed with HTTP 400 `Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.`
+- **Root cause:** `gpt-5-nano` is a reasoning model. It rejects `max_tokens` and any `temperature` other than the default. Unit tests with fake clients could not catch it.
+- **Fix:** send `max_completion_tokens` (default 800) and no `temperature`; `reasoning_effort` is sent only when configured. Unit tests assert the exact request parameters.
+- **Prevention:** the Phase 0 feasibility test runs the real classifier against a real deployment before anything else depends on it.
+
+### 7. HTTP 429 although the deployment capacity was raised
+- **Symptom:** `Your requests to gpt-5-nano for chat in southeastasia have exceeded request rate limit`; the headers showed `x-ratelimit-limit-requests: 1` and `x-ratelimit-limit-tokens: 1000` even after the deployment was updated to capacity 50.
+- **Root cause:** `az cognitiveservices account deployment show` reported 50 (50 RPM, 50K TPM), but the gateway kept enforcing the capacity of the original deployment (1) for more than 5 minutes after an in-place update.
+- **Fix:** delete the deployment and create it again with the target capacity; the new limits applied immediately. In Terraform, create it with the right `openai_capacity` from the start. If capacity must change on a live system, plan for a delete and create.
+- **Prevention:** read the `x-ratelimit-*` response headers (they show the limit actually enforced), not only the control-plane value.
+
+### 8. Azure OpenAI default reasoning is slow and token-hungry
+- **Symptom:** 5 to 10 seconds and 950 to 1,725 output tokens per review, so a 50-review chunk would take several minutes.
+- **Root cause:** gpt-5 models spend hidden reasoning tokens by default.
+- **Fix:** `reasoning_effort=minimal` (needs API version `2025-04-01-preview`): 43 to 55 output tokens and 1.5 to 3.3 seconds.
+- **Prevention:** `OPENAI_REASONING_EFFORT` and `OPENAI_API_VERSION` are app settings set by Terraform. Azure also reserves TPM quota from `max_completion_tokens`, so keep it small.
+
+### 9. `az` works in PowerShell but not in the `!` prompt
+- **Symptom:** `az: command not found`, then `'C:\Program' is not recognized` when a bash function pointed at `az.cmd`.
+- **Root cause:** the `!` prefix runs in Git Bash, where the Windows Azure CLI is not on PATH, and Git Bash cannot call a `.cmd` in a path with spaces from a function.
+- **Fix:** run Azure CLI commands in PowerShell (use `( )` instead of `$( )` for command substitution).
+- **Prevention:** the deploy checklist uses PowerShell commands only.
+
+### 10. Creating a role assignment from the agent session was blocked
+- **Symptom:** the agent session refused `az role assignment create` even though the owner had approved the temporary test.
+- **Root cause:** the Claude Code permission classifier treats RBAC changes as sensitive; the project rules also deny `az role assignment delete` and `az group delete`.
+- **Fix:** the owner ran the one command in their own terminal. Cleanup relied on deleting the resource, which removes role assignments scoped to it. The empty temporary resource group is removed by the owner with `az group delete`.
+- **Prevention:** keep RBAC in Terraform; for manual tests, ask the owner to run the single `az role assignment create`.
