@@ -31,8 +31,8 @@ Guard rails: DEPLOY PAUSE after Phase 6. No `git push`, `terraform apply` or res
   Verify: `.venv\Scripts\python -m pip check` passes; no global installs.
 - [x] 1.3 `pyproject.toml` (ruff, pytest, coverage `--cov=src --cov-fail-under=80`), `.pre-commit-config.yaml`.
   Verify: `ruff check .` and `pytest` run (empty suite allowed at this stage).
-- [ ] 1.4 `.claude/settings.json` deny rules (terraform destroy, az group delete, az role assignment delete, git push --force, and PowerShell variants) using the current permission syntax from the Claude Code docs.
-  Verify: JSON is valid and the syntax is confirmed against the docs. **Open:** rules written from memory of the current syntax (`Bash(cmd *)`); confirm against the Claude Code docs.
+- [x] 1.4 `.claude/settings.json` deny rules (terraform destroy, az group delete, az role assignment delete, git push --force, and PowerShell variants) using the current permission syntax from the Claude Code docs.
+  Verify: JSON parses (38 deny, 12 ask); syntax confirmed against https://code.claude.com/docs/en/permissions. Added patterns for flags before the subcommand (`terraform -chdir=... destroy`, `git -C . push --force`), which a plain `cmd subcmd *` rule does not match. Not yet checked live with `/permissions`; deny rules are not a hard security boundary (`sh -c '...'` is not covered), so CLAUDE.md rules still apply.
 - [x] 1.5 `scripts/tasks.py` runner with subcommands: init, fmt, lint, test, plan, deploy, deploy-functions, bootstrap-data, backfill, smoke-test, evaluate, destroy (destroy only prints the instructions; the user runs it).
   Verify: `python scripts/tasks.py --help` lists all; `lint` and `test` subcommands run.
 - [x] 1.6 Skeleton dirs and `docs/adr/` template. Commit.
