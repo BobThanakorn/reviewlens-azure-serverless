@@ -47,7 +47,11 @@ def test_package_only_publishes_nothing(tmp_path):
 
 
 def test_publish_with_explicit_names_skips_terraform(tmp_path):
-    with patch.object(df, "publish") as publish, patch.object(df, "terraform_outputs") as tf:
+    with (
+        patch.object(df, "publish") as publish,
+        patch.object(df, "ensure_identity_only_storage", return_value=False),
+        patch.object(df, "terraform_outputs") as tf,
+    ):
         rc = df.main(
             ["--resource-group", "rg", "--pipeline-app", "p", "--api-app", "a",
              "--out-dir", str(tmp_path)]
@@ -59,34 +63,51 @@ def test_publish_with_explicit_names_skips_terraform(tmp_path):
 
 def test_publish_builds_remote_build_command():
     with patch.object(df, "az") as az:
-        az.return_value.returncode = 0
         df.publish("rg", "app", df.ROOT / "x.zip")
     cmd = az.call_args.args
     assert cmd[:4] == ("functionapp", "deployment", "source", "config-zip")
     assert "--build-remote" in cmd and "true" in cmd
 
 
-def completed(returncode, stdout=""):
-    return subprocess.CompletedProcess([], returncode, stdout=stdout)
+def listed(*names):
+    return subprocess.CompletedProcess([], 0, stdout="\n".join(names) + "\n")
 
 
-def test_publish_tolerates_health_check_exit_code_when_functions_exist(capsys):
-    with patch.object(df, "az", side_effect=[completed(3), completed(0, "a\nb\n")]):
-        df.publish("rg", "app", df.ROOT / "x.zip")
-    assert "functions registered: ['a', 'b']" in capsys.readouterr().out
+def test_stray_connection_string_setting_is_deleted():
+    with patch.object(
+        df, "az", return_value=listed("AzureWebJobsStorage", "AZURE_CLIENT_ID")
+    ) as az:
+        assert df.ensure_identity_only_storage("rg", "app") is True
+    delete = az.call_args_list[-1].args
+    assert delete[:4] == ("functionapp", "config", "appsettings", "delete")
+    assert delete[delete.index("--setting-names") + 1] == "AzureWebJobsStorage"
 
 
-def test_publish_fails_when_no_functions_are_registered():
+def test_identity_settings_are_never_deleted():
+    names = ("AzureWebJobsStorage__accountName", "AzureWebJobsStorage__clientId")
+    with patch.object(df, "az", return_value=listed(*names)) as az:
+        assert df.ensure_identity_only_storage("rg", "app") is False
+    assert az.call_count == 1  # only the listing, no delete
+
+
+def test_every_app_is_cleaned_before_it_is_published(tmp_path):
+    calls = []
     with (
-        patch.object(df, "az", side_effect=[completed(3), completed(0, "")]),
-        pytest.raises(SystemExit, match="no functions are registered"),
+        patch.object(
+            df, "ensure_identity_only_storage", side_effect=lambda g, a: calls.append(("clean", a))
+        ),
+        patch.object(df, "publish", side_effect=lambda g, a, p: calls.append(("publish", a))),
     ):
-        df.publish("rg", "app", df.ROOT / "x.zip")
-
-
-def test_publish_fails_when_function_listing_fails():
-    with (
-        patch.object(df, "az", side_effect=[completed(1), completed(1)]),
-        pytest.raises(SystemExit),
-    ):
-        df.publish("rg", "app", df.ROOT / "x.zip")
+        df.main(
+            [
+                "--resource-group",
+                "rg",
+                "--pipeline-app",
+                "p",
+                "--api-app",
+                "a",
+                "--out-dir",
+                str(tmp_path),
+            ]
+        )
+    assert calls == [("clean", "p"), ("publish", "p"), ("clean", "a"), ("publish", "a")]

@@ -64,46 +64,49 @@ def terraform_outputs() -> dict[str, str]:
     return {k: v["value"] for k, v in json.loads(result.stdout).items()}
 
 
-def az(*args: str, check: bool = True, capture: bool = False) -> subprocess.CompletedProcess:
+def az(*args: str, capture: bool = False) -> subprocess.CompletedProcess:
     exe = shutil.which("az")
     if exe is None:
         raise SystemExit("Azure CLI (az) not found on PATH")
-    return subprocess.run([exe, *args], check=check, capture_output=capture, text=True)
+    return subprocess.run([exe, *args], check=True, capture_output=capture, text=True)
 
 
-def registered_functions(resource_group: str, app_name: str) -> list[str]:
-    result = az(
-        "functionapp", "function", "list",
+def ensure_identity_only_storage(resource_group: str, app_name: str) -> bool:
+    """Remove the bare ``AzureWebJobsStorage`` setting; return True if one was removed.
+
+    azurerm injects it with an empty AccountKey on every apply and hides it from the plan
+    (hashicorp/terraform-provider-azurerm#29149). The host then signs requests with that empty
+    key instead of using the ``AzureWebJobsStorage__*`` identity settings, so secrets, health and
+    triggers fail with 403 while shared-key access is disabled (docs/runbook.md, incident 13).
+    """
+    listed = az(
+        "functionapp", "config", "appsettings", "list",
         "--resource-group", resource_group,
         "--name", app_name,
         "--query", "[].name",
         "--output", "tsv",
-        check=False, capture=True,
+        capture=True,
     )  # fmt: skip
-    return result.stdout.split() if result.returncode == 0 else []
+    if "AzureWebJobsStorage" not in listed.stdout.split():
+        return False
+    az(
+        "functionapp", "config", "appsettings", "delete",
+        "--resource-group", resource_group,
+        "--name", app_name,
+        "--setting-names", "AzureWebJobsStorage",
+        "--output", "none",
+    )  # fmt: skip
+    return True
 
 
 def publish(resource_group: str, app_name: str, zip_path: Path) -> None:
-    result = az(
+    az(
         "functionapp", "deployment", "source", "config-zip",
         "--resource-group", resource_group,
         "--name", app_name,
         "--src", str(zip_path),
         "--build-remote", "true",
-        check=False,
     )  # fmt: skip
-    if result.returncode == 0:
-        return
-    # On Flex Consumption with shared-key access disabled the CLI's final health check cannot
-    # read the host key and exits non-zero although the package was deployed (docs/runbook.md,
-    # incident 13). Trust the registered functions instead of the exit code.
-    functions = registered_functions(resource_group, app_name)
-    if not functions:
-        raise SystemExit(f"deployment of {app_name} failed and no functions are registered")
-    print(
-        f"warning: az exited {result.returncode} for {app_name}; "
-        f"functions registered: {functions}"
-    )
 
 
 def upload_web(storage_account: str) -> None:
@@ -147,6 +150,8 @@ def main(argv: list[str] | None = None) -> int:
         "api": args.api_app or outputs["api_app_name"],
     }
     for app, path in zips.items():
+        if ensure_identity_only_storage(group, names[app]):
+            print(f"removed stray AzureWebJobsStorage connection string from {names[app]}")
         print(f"publishing {app} -> {names[app]}")
         publish(group, names[app], path)
     if args.with_web:
