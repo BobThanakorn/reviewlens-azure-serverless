@@ -29,7 +29,7 @@ flowchart LR
 | LLM integration (validation, retries, cost control) | [`src/common/classifier.py`](src/common/classifier.py), [`src/pipeline/enrich`](src/pipeline/enrich), [ADR 000](docs/adr/000-ai-provider.md) |
 | Monitoring and alerting | [`modules/monitoring`](terraform/modules/monitoring) |
 | Testing and quality gates | [`tests`](tests) (184 tests, 95% coverage), ruff, tflint, checkov |
-| Operations: real incidents and fixes | [`docs/runbook.md`](docs/runbook.md) (15 incidents from this build) |
+| Operations: real incidents and fixes | [`docs/runbook.md`](docs/runbook.md) (16 incidents from this build) |
 | Evaluation of an AI component | [`docs/evaluation.md`](docs/evaluation.md), [`scripts/evaluate.py`](scripts/evaluate.py) |
 
 ## Key results
