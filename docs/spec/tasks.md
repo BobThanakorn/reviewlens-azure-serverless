@@ -121,8 +121,10 @@ Guard rails: DEPLOY PAUSE after Phase 6. No `git push`, `terraform apply` or res
   Verify: plan 15 to add shown and confirmed; apply complete 15 added, 0 changed, 0 destroyed. No always-on-cost resource.
 - [x] 7.4 `envs/dev` plan → confirmation → apply. **Moved before the data upload:** the data storage account is created by `envs/dev`, and `bootstrap_data.py` needs its URL.
   Verify: plan 48 to add shown and confirmed; apply needed three rounds (incidents 11 and 12 in `docs/runbook.md`, ADR 009); final state has all 48 resources, outputs returned, `fmt`/`validate` pass. Alert e-mail confirmation of the action group is still pending on the user.
-- [ ] 7.3 `bootstrap_data.py` upload (500 reviews, 10 chunks), after 7.4.
-- [ ] 7.5 Deploy function code, upload web.
+- [x] 7.3 `bootstrap_data.py` upload (500 reviews, 10 chunks), after 7.4.
+  Verify: dry-run wrote 10 files first; upload printed "uploaded 10 blobs"; `az storage blob list` shows `chunks/000001..000010.jsonl` in container `source`. No Hugging Face login was needed.
+- [x] 7.5 Deploy function code, upload web.
+  Verify: pipeline app lists backfill, daily_ingest and enrich; API app lists api; `config.js`, `index.html` and `styles.css` are in `$web`. `deploy_functions.py` fixed for exit code 3 (runbook incident 13), 181 tests pass, ruff clean.
 - [ ] 7.6 Backfill 10 days; poison queue empty.
 - [ ] 7.7 `smoke_test.py` passes; dashboard URL opens with real data.
   Verify each step by its own output; log every real error to the runbook.

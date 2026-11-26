@@ -64,21 +64,46 @@ def terraform_outputs() -> dict[str, str]:
     return {k: v["value"] for k, v in json.loads(result.stdout).items()}
 
 
-def az(*args: str) -> None:
+def az(*args: str, check: bool = True, capture: bool = False) -> subprocess.CompletedProcess:
     exe = shutil.which("az")
     if exe is None:
         raise SystemExit("Azure CLI (az) not found on PATH")
-    subprocess.run([exe, *args], check=True)
+    return subprocess.run([exe, *args], check=check, capture_output=capture, text=True)
+
+
+def registered_functions(resource_group: str, app_name: str) -> list[str]:
+    result = az(
+        "functionapp", "function", "list",
+        "--resource-group", resource_group,
+        "--name", app_name,
+        "--query", "[].name",
+        "--output", "tsv",
+        check=False, capture=True,
+    )  # fmt: skip
+    return result.stdout.split() if result.returncode == 0 else []
 
 
 def publish(resource_group: str, app_name: str, zip_path: Path) -> None:
-    az(
+    result = az(
         "functionapp", "deployment", "source", "config-zip",
         "--resource-group", resource_group,
         "--name", app_name,
         "--src", str(zip_path),
         "--build-remote", "true",
+        check=False,
     )  # fmt: skip
+    if result.returncode == 0:
+        return
+    # On Flex Consumption with shared-key access disabled the CLI's final health check cannot
+    # read the host key and exits non-zero although the package was deployed (docs/runbook.md,
+    # incident 13). Trust the registered functions instead of the exit code.
+    functions = registered_functions(resource_group, app_name)
+    if not functions:
+        raise SystemExit(f"deployment of {app_name} failed and no functions are registered")
+    print(
+        f"warning: az exited {result.returncode} for {app_name}; "
+        f"functions registered: {functions}"
+    )
 
 
 def upload_web(storage_account: str) -> None:

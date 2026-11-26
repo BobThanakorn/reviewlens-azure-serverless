@@ -1,3 +1,4 @@
+import subprocess
 import zipfile
 from unittest.mock import patch
 
@@ -58,7 +59,34 @@ def test_publish_with_explicit_names_skips_terraform(tmp_path):
 
 def test_publish_builds_remote_build_command():
     with patch.object(df, "az") as az:
+        az.return_value.returncode = 0
         df.publish("rg", "app", df.ROOT / "x.zip")
     cmd = az.call_args.args
     assert cmd[:4] == ("functionapp", "deployment", "source", "config-zip")
     assert "--build-remote" in cmd and "true" in cmd
+
+
+def completed(returncode, stdout=""):
+    return subprocess.CompletedProcess([], returncode, stdout=stdout)
+
+
+def test_publish_tolerates_health_check_exit_code_when_functions_exist(capsys):
+    with patch.object(df, "az", side_effect=[completed(3), completed(0, "a\nb\n")]):
+        df.publish("rg", "app", df.ROOT / "x.zip")
+    assert "functions registered: ['a', 'b']" in capsys.readouterr().out
+
+
+def test_publish_fails_when_no_functions_are_registered():
+    with (
+        patch.object(df, "az", side_effect=[completed(3), completed(0, "")]),
+        pytest.raises(SystemExit, match="no functions are registered"),
+    ):
+        df.publish("rg", "app", df.ROOT / "x.zip")
+
+
+def test_publish_fails_when_function_listing_fails():
+    with (
+        patch.object(df, "az", side_effect=[completed(1), completed(1)]),
+        pytest.raises(SystemExit),
+    ):
+        df.publish("rg", "app", df.ROOT / "x.zip")

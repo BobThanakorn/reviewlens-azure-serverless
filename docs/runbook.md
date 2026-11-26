@@ -75,3 +75,9 @@ Status: incidents are added as they happen during the build. Operating procedure
 - **Root cause:** the role `Storage Queue Data Message Sender` was assigned to the topic identity on the `enrich` queue only. Read-only checks showed the assignment existed and matched the topic's principal, so it was not RBAC propagation. Event Grid expects the role on the storage account (ADR 009).
 - **Fix:** scope the role assignment to the data storage account in `modules/eventing`; Terraform replaced the assignment and the subscription was created at the first attempt.
 - **Prevention:** do not retry the same apply hoping for propagation; after one retry, compare the role scope with the service documentation.
+
+### 13. `az functionapp deployment source config-zip` exits 3 although the deploy worked
+- **Symptom:** `ERROR: Failed to fetch host key to check for function app status`, exit code 3, after `Deployment endpoint responded with status code 202`. `scripts/deploy_functions.py` stopped after the first app.
+- **Root cause:** the CLI finishes with a health check that reads the function host key. With shared-key access disabled on the host storage account (keys live in blob storage) that read fails, but the package is already deployed.
+- **Fix:** `publish()` now checks `az functionapp function list` when the exit code is non-zero. Registered functions mean success (a warning is printed); no functions means failure. Unit tests cover both outcomes.
+- **Prevention:** verify a deployment by the functions it registers, not by the CLI exit code. The same check runs in CI because `deploy.yml` calls this script.
