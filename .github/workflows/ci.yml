@@ -100,7 +100,10 @@ jobs:
           script: |
             const fs = require('fs');
             const file = 'terraform/envs/dev/plan.txt';
-            const text = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '(no plan output)';
+            // The repository is public: mask GUIDs (subscription, tenant, object ids) in the comment.
+            const guid = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
+            const raw = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '(no plan output)';
+            const text = raw.replace(guid, '<id>');
             const summary = (text.match(/^(Plan:.*|No changes\..*)$/m) || ['(see details)'])[0];
             const status = '${{ steps.plan.outcome }}' === 'success' ? 'succeeded' : 'FAILED';
             const body = [

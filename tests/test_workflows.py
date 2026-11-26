@@ -52,6 +52,11 @@ def test_plan_uses_read_only_identity_and_skips_the_lock():
     assert "github.event.pull_request.head.repo.full_name == github.repository" in job["if"]
 
 
+def test_plan_comment_masks_guids_because_the_repository_is_public():
+    text = steps_text(load("ci.yml")["jobs"]["plan"])
+    assert ".replace(guid, '<id>')" in text and "{8}-" in text
+
+
 def test_apply_identity_is_only_used_by_main_branch_workflows():
     ci = (WORKFLOWS / "ci.yml").read_text(encoding="utf-8")
     deploy = load("deploy.yml")
