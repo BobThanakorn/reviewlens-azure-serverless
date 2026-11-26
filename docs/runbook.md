@@ -1,6 +1,6 @@
 # Runbook
 
-Status: incidents 1-16 are real errors from this build. The procedures below were written after the first deployment; each one says whether it has been exercised on the live environment.
+Status: incidents 1-17 are real errors from this build. The procedures below were written after the first deployment; each one says whether it has been exercised on the live environment.
 
 ## Procedures
 
@@ -128,3 +128,9 @@ All commands are PowerShell. Names come from `terraform -chdir=terraform/envs/de
 - **Root cause:** the fallback was written before ADR 000 chose `openai`. With the variable unset, the first CI apply would have switched the provider and replaced the OpenAI account with a Language account.
 - **Fix:** the fallback is `openai` (same as the Terraform default), and `docs/github-setup.md` says to set the variable explicitly.
 - **Prevention:** compare every workflow default with the Terraform variable default when a decision changes.
+
+### 17. `python scripts/tasks.py checkov` fails with `No module named 'checkov'`
+- **Symptom:** `File association not found for extension .py`, then `ModuleNotFoundError: No module named 'checkov'` from `.venv-checkov\Scripts\checkov.cmd`.
+- **Root cause:** on Windows the `checkov.cmd` launcher starts the Python registered for `.py` files, not the interpreter of `.venv-checkov`.
+- **Fix:** `tasks.py` runs `<venv python> -m checkov.main`. Result after the Phase 7 Terraform changes: 62 passed, 0 failed, 40 skipped (each skip justified inline).
+- **Prevention:** call tools through a specific interpreter (`python -m ...`) instead of generated launchers.

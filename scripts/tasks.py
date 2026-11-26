@@ -87,14 +87,18 @@ def cmd_dev(args: argparse.Namespace) -> int:
 def cmd_checkov(_: argparse.Namespace) -> int:
     """Run checkov from its own venv (it pins libraries that conflict with pytest)."""
     venv = ROOT / ".venv-checkov"
-    exe = venv / ("Scripts/checkov.cmd" if sys.platform == "win32" else "bin/checkov")
-    if not exe.exists():
-        py = str(venv / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python"))
+    py = venv / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
+    if not py.exists():
         rc = run([sys.executable, "-m", "venv", str(venv)])
-        rc = rc or run([py, "-m", "pip", "install", "-r", "requirements-checkov.txt"])
+        rc = rc or run([str(py), "-m", "pip", "install", "-r", "requirements-checkov.txt"])
         if rc:
             return rc
-    return run([str(exe), "-d", "terraform", "--framework", "terraform", "--quiet", "--compact"])
+    # Call the venv's interpreter: on Windows `checkov.cmd` starts whatever Python owns the .py
+    # file association, which does not have checkov installed.
+    return run(
+        [str(py), "-m", "checkov.main", "-d", "terraform", "--framework", "terraform",
+         "--quiet", "--compact"]
+    )  # fmt: skip
 
 
 def cmd_plan(_: argparse.Namespace) -> int:
