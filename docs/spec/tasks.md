@@ -125,9 +125,10 @@ Guard rails: DEPLOY PAUSE after Phase 6. No `git push`, `terraform apply` or res
   Verify: dry-run wrote 10 files first; upload printed "uploaded 10 blobs"; `az storage blob list` shows `chunks/000001..000010.jsonl` in container `source`. No Hugging Face login was needed.
 - [x] 7.5 Deploy function code, upload web.
   Verify: pipeline app lists backfill, daily_ingest and enrich; API app lists api; `config.js`, `index.html` and `styles.css` are in `$web`. `deploy_functions.py` fixed for exit code 3 (runbook incident 13), 181 tests pass, ruff clean.
-- [ ] 7.6 Backfill 10 days; poison queue empty.
-  Progress: canary of 1 chunk, then 9 more; `raw=10`, `processed=10`, `enrich` queue empty, 500 reviews classified (incidents 14 and 15 fixed on the way). **Open:** `enrich-poison` still holds 1 stale message from before the base64 fix; deleting it needs the owner's OK.
-- [ ] 7.7 `smoke_test.py` passes; dashboard URL opens with real data.
+- [x] 7.6 Backfill 10 days; poison queue empty.
+  Progress: canary of 1 chunk, then 9 more; `raw=10`, `processed=10`, `enrich` queue empty, 500 reviews classified (incidents 14 and 15 fixed on the way). The stale `enrich-poison` message from before the base64 fix was cleared on the owner's request (2026-11-26); queue verified empty.
+- [x] 7.7 `smoke_test.py` passes; dashboard URL opens with real data.
+  Verify: `smoke_test.py --days 0` printed `API routes OK`, `poison queue empty` and the dashboard URL (exit 0); dashboard files return 200 and the API answers with the dashboard origin in `Access-Control-Allow-Origin`. Not checked in a browser by the agent.
   Verify each step by its own output; log every real error to the runbook.
 
 ## Phase 8. Evaluation
@@ -144,7 +145,7 @@ Guard rails: DEPLOY PAUSE after Phase 6. No `git push`, `terraform apply` or res
 
 ## Phase 10. Final verification
 - [ ] 10.1 Walk the Definition of Done (brief section 15) item by item.
-  Status 2026-11-26: lint/tests (184, 95%) done; fmt/validate/tflint/checkov done in 6.3 and fmt/validate re-run after each Terraform change; dev deployed and timer registered; 10-day backfill processed; smoke test passes except the poison-queue check (1 stale message, owner deletes); dashboard serves real data (API + CORS checked); evaluation and feasibility have real numbers; README and docs written; history scan clean. **Open:** empty the poison queue, first push and green CI/deploy runs, action group e-mail confirmation.
+  Status 2026-11-26: lint/tests (184, 95%) done; fmt/validate/tflint/checkov done in 6.3 and fmt/validate re-run after each Terraform change; dev deployed and timer registered; 10-day backfill processed; smoke test passes except the poison-queue check (1 stale message, owner deletes); dashboard serves real data (API + CORS checked); evaluation and feasibility have real numbers; README and docs written; history scan clean. **Open:** first push and green CI/deploy runs, action group e-mail confirmation.
 - [x] 10.2 Secret scan of the working tree and git history.
   Verify: e-mail, subscription and tenant ids, all client/object ids, state account name and key/token patterns: 0 hits in history and tree; only built-in role definition GUIDs in `terraform/bootstrap/main.tf`.
 - [ ] 10.3 Final report in Thai (brief section 16).
