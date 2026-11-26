@@ -1,6 +1,35 @@
 # Runbook
 
-Status: incidents are added as they happen during the build. Operating procedures (reprocess a day, drain the poison queue, change model, pause the timer) are written in Phase 9 after the first deployment, so they are tested before they are documented.
+Status: incidents 1-15 are real errors from this build. The procedures below were written after the first deployment; each one says whether it has been exercised on the live environment.
+
+## Procedures
+
+All commands are PowerShell. Names come from `terraform -chdir=terraform/envs/dev output`.
+
+### Drain the poison queue
+**Exercised:** the copy-back step (2026-11-26, after incident 15). The delete step is an owner action (the agent session is not allowed to delete queue messages).
+1. Find the cause first: Application Insights `exceptions` for `Functions.enrich`, and peek the message (`peek_messages` does not dequeue it).
+2. Deploy the fix.
+3. Copy each poison message back to `enrich` with the same body (a base64 Event Grid event). The host reprocesses it; `enrich` skips any chunk whose processed blob already exists.
+4. When `processed` has the expected blobs, delete the poison messages (the owner does this; it removes data). The smoke test requires an empty poison queue.
+
+### Reprocess a day
+**Partly exercised:** step 3 was used for the first chunk.
+1. Delete the processed blob of that day, `processed/dt=YYYY-MM-DD/chunk-NNNNNN.jsonl` (owner action: it deletes data). `enrich` skips chunks that already have output, so this is what makes it run again.
+2. The raw blob stays as it is.
+3. Re-trigger: send the original Event Grid event for that raw blob to `enrich` (as in "Drain the poison queue"), or copy the raw blob over itself so storage raises a new `BlobCreated` event.
+
+### Change the model
+**Not exercised yet.**
+1. Set `openai_model_name`, `openai_model_version` and, if needed, `openai_capacity` in `terraform/envs/dev/terraform.tfvars`, then `python scripts/tasks.py plan` and apply.
+2. Plan for the deployment to be replaced, not updated in place: incident 7 showed that an in-place capacity change did not reach the gateway.
+3. Check the `x-ratelimit-*` headers of one call, then run `python scripts/tasks.py deploy-functions` (it also removes the stray setting from incident 13) and a 1-day backfill as a canary.
+4. Re-run `python scripts/tasks.py evaluate` and compare with `docs/evaluation.md`.
+
+### Pause the daily timer
+**Not exercised yet.** The timer `daily_ingest` runs at 01:00 UTC (08:00 Bangkok) and ingests one chunk a day until the 10 source chunks are used up; after that it only logs `end of data`.
+- Microsoft documents disabling one function with the app setting `AzureWebJobs.daily_ingest.Disabled = true`. Add it through the `app_settings` input of `module.func_pipeline` so Terraform keeps it, then apply. Verify in the host log that the timer is no longer scheduled; the setting name format on Linux has not been verified on this app.
+- To stop all cost from the pipeline, the stronger option is `terraform destroy` of `envs/dev` (owner only, see README "Cost and teardown").
 
 ## Incidents
 

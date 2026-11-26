@@ -161,7 +161,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("deploy-functions", help="package and publish both Function Apps")
     p = sub.add_parser("bootstrap-data", help="sample the dataset and upload chunks")
     p.add_argument("script_args", nargs="*")
-    p = sub.add_parser("backfill", help="call the admin backfill endpoint")
+    p = sub.add_parser("backfill", help="call the ops/backfill endpoint")
     p.add_argument("--days", type=int, required=True)
     p = sub.add_parser("smoke-test", help="end-to-end check against the deployed environment")
     p.add_argument("script_args", nargs="*")

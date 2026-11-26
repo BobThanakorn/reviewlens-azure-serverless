@@ -131,12 +131,15 @@ Guard rails: DEPLOY PAUSE after Phase 6. No `git push`, `terraform apply` or res
   Verify each step by its own output; log every real error to the runbook.
 
 ## Phase 8. Evaluation
-- [ ] 8.1 `evaluate.py` run; commit `docs/evaluation.md` with real numbers. Verify: file has sample size, accuracy, matrix, 5 examples.
+- [x] 8.1 `evaluate.py` run; commit `docs/evaluation.md` with real numbers. Verify: file has sample size, accuracy, matrix, 5 examples.
+  Verify: 500 reviews, 77.4%, confusion matrix, 5 examples and a hand-written analysis (`docs/evaluation-analysis.md`, embedded by the script; `main()` did not pass it before and was fixed).
 
 ## Phase 9. Documentation
-- [ ] 9.1 README top section (title, tagline, CI badge, Mermaid, skills table, results), prerequisites, quickstart, how it works, cost/teardown, dataset credit, next steps.
-- [ ] 9.2 `docs/architecture.md`, `runbook.md` (real incidents + procedures), `cost.md` (no invented prices).
-- [ ] 9.3 Module READMEs complete.
+- [x] 9.1 README top section (title, tagline, CI badge, Mermaid, skills table, results), prerequisites, quickstart, how it works, cost/teardown, dataset credit, next steps.
+- [x] 9.2 `docs/architecture.md`, `runbook.md` (real incidents + procedures), `cost.md` (no invented prices).
+  Note: runbook procedures state which steps were exercised live (poison copy-back yes; change model and pause timer not yet).
+- [x] 9.3 Module READMEs complete.
+  Note: tasks 4.2-4.6 were ticked although no module README existed; all six were generated from the `.tf` files in Phase 9.
   Verify: links resolve; no secrets or IDs in any doc (grep for GUID patterns and the e-mail).
 
 ## Phase 10. Final verification
