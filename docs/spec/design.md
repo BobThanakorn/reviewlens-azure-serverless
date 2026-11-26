@@ -81,7 +81,7 @@ Names get a random suffix (3 to 24 chars, lowercase). Prefix `rl-dev` for non-st
 
 **backfill request:** `{"backfill_days": 3}` → `{"ingested": [{"chunk": 1, "dt": "2026-11-23"}, ...], "remaining": 7}`
 
-**queue message:** raw Event Grid schema event. Blob path comes from `subject` (`/blobServices/default/containers/raw/blobs/dt=.../chunk-000001.jsonl`). `host.json` sets `queues.messageEncoding = "none"` because Event Grid writes plain JSON, not base64.
+**queue message:** raw Event Grid schema event. Blob path comes from `subject` (`/blobServices/default/containers/raw/blobs/dt=.../chunk-000001.jsonl`). `host.json` sets `queues.messageEncoding = "base64"` because Event Grid writes the event as base64 text and the host must decode it (ADR 002, runbook incident 15).
 
 **API responses** (all `application/json`):
 - `/api/stats/daily?days=14` → `{"days":14,"series":[{"date":"...","total":50,"positive":..,"neutral":..,"negative":..,"unknown":..}]}`

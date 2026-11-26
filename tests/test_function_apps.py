@@ -21,7 +21,9 @@ def test_host_json_queue_settings_match_the_spec():
     assert queues["batchSize"] == 1
     assert queues["newBatchThreshold"] == 0
     assert queues["maxDequeueCount"] == 3
-    assert queues["messageEncoding"] == "none"  # Event Grid writes plain JSON, not base64
+    # Event Grid writes base64 text to Storage queues; the host must decode it before the handler
+    # runs (docs/runbook.md, incident 15).
+    assert queues["messageEncoding"] == "base64"
 
 
 # The SDK validates function names on every get_functions() call and rejects a second call on
@@ -38,6 +40,21 @@ def test_backfill_is_function_key_protected():
     trigger = PIPELINE_FUNCTIONS["backfill"].get_trigger()
     assert str(trigger.auth_level).upper().endswith("FUNCTION")
     assert [str(getattr(m, "value", m)) for m in trigger.methods] == ["POST"]
+
+
+def test_http_routes_avoid_prefixes_reserved_by_the_functions_host():
+    # `admin/...` conflicts with the host's built-in routes: the function is listed but never
+    # served (docs/runbook.md, incident 14).
+    reserved = {"admin", "runtime"}
+    for functions in (PIPELINE_FUNCTIONS, API_FUNCTIONS):
+        for function in functions.values():
+            route = getattr(function.get_trigger(), "route", None)
+            if route:
+                assert route.strip("/").split("/")[0].lower() not in reserved, route
+
+
+def test_backfill_route_is_ops_backfill():
+    assert PIPELINE_FUNCTIONS["backfill"].get_trigger().route == "ops/backfill"
 
 
 def test_api_is_get_only_and_anonymous():

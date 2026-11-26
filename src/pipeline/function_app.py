@@ -57,7 +57,7 @@ def daily_ingest(timer: func.TimerRequest) -> None:
     logging.info("daily_ingest finished: %s", result.as_dict())
 
 
-@app.route(route="admin/backfill", methods=["POST"], auth_level=func.AuthLevel.FUNCTION)
+@app.route(route="ops/backfill", methods=["POST"], auth_level=func.AuthLevel.FUNCTION)
 def backfill(req: func.HttpRequest) -> func.HttpResponse:
     status, body = backfill_request(req.get_body())
     return json_response(status, body)

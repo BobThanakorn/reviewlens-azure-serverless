@@ -13,5 +13,5 @@ The brief's "subject prefix raw/" is corrected: blob event subjects include the 
 ## Consequences
 - The queue absorbs bursts (a 10-day backfill) and survives function restarts; delivery is at-least-once, so enrichment is idempotent (existing processed blob = skip).
 - Poison messages are visible and alertable instead of being retried forever.
-- Event Grid writes plain JSON, so `host.json` sets `messageEncoding: none`.
+- Event Grid writes the event as base64 text, so `host.json` keeps the default `messageEncoding: base64` and the host decodes it before the handler runs. (The first version of this ADR assumed plain JSON and set `none`; the first real deploy proved that wrong, see `docs/runbook.md`, incident 15.)
 - A direct Event Grid to Function endpoint would be simpler but gives no buffering, no poison queue and no concurrency control.

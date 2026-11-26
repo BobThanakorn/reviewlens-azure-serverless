@@ -1,6 +1,6 @@
 """End-to-end smoke test of a deployed environment.
 
-1. POST /api/admin/backfill {"backfill_days": N} on func-pipeline (function key).
+1. POST /api/ops/backfill {"backfill_days": N} on func-pipeline (function key).
 2. Poll until N new processed blobs exist (max 10 minutes).
 3. GET every API route and assert valid, non-empty JSON.
 4. Assert the poison queue is empty.
@@ -149,7 +149,7 @@ def main(argv: list[str] | None = None) -> int:
     ingested = 0
     if args.days > 0:
         # Flex Consumption host names carry a generated suffix; take the real one from Terraform.
-        backfill_url = f"https://{out['pipeline_hostname']}/api/admin/backfill"
+        backfill_url = f"https://{out['pipeline_hostname']}/api/ops/backfill"
         key = function_key(out["resource_group_name"], out["pipeline_app_name"])
         result = http_json(
             backfill_url, "POST", {"backfill_days": args.days}, {"x-functions-key": key}

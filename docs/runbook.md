@@ -81,3 +81,15 @@ Status: incidents are added as they happen during the build. Operating procedure
 - **Root cause:** the app had a bare `AzureWebJobsStorage` setting, a connection string with an **empty** `AccountKey`, next to the identity settings `AzureWebJobsStorage__accountName/__clientId/__credential`. Terraform never set it and it is not in the plan or state. This is a known azurerm bug (hashicorp/terraform-provider-azurerm#29149): the flex consumption resource adds it on apply. The host prefers the connection string, signs with the empty key, and the account has shared-key access disabled, so every storage call returns 403. A first workaround that tolerated exit code 3 was wrong (it hid this cause) and was reverted.
 - **Fix:** delete the setting (`az functionapp config appsettings delete --setting-names AzureWebJobsStorage`). `scripts/deploy_functions.py` now does this for each app before publishing, so it also runs in CI after every apply. The deploy then exits 0 and `keys list` works.
 - **Prevention:** after any `terraform apply` that touches a function app, run the deploy script (it re-cleans the setting). Check `az functionapp config appsettings list` for a bare `AzureWebJobsStorage` when you see 403 `signature` errors from the host.
+
+### 14. HTTP function listed but returns 404: route conflicts with a built-in route
+- **Symptom:** `POST /api/admin/backfill` returned an empty 404 even with a valid function key, while `az functionapp function list` showed `backfill`. Application Insights: `The 'backfill' function is in error: The specified route conflicts with one or more built in routes` and `No HTTP routes mapped`.
+- **Root cause:** the `admin/` prefix is reserved by the Functions host (`/admin/host/...`). The worker registers the function, the host refuses to serve it.
+- **Fix:** route renamed to `ops/backfill` (`src/pipeline/function_app.py`, `scripts/smoke_test.py`). A unit test now rejects any HTTP route that starts with `admin` or `runtime`.
+- **Prevention:** a listed function is not proof it is served; after deploy read the host log (`traces`) for "is in error" and call the route once.
+
+### 15. `enrich` fails with `JSONDecodeError` and messages land in the poison queue
+- **Symptom:** the first backfill chunk raised a BlobCreated event, Event Grid delivered it to the `enrich` queue, `Functions.enrich` failed three times in milliseconds with `JSONDecodeError: Expecting value: line 1 column 1 (char 0)` and the message moved to `enrich-poison`.
+- **Root cause:** Event Grid writes the event to a Storage queue as **base64 text** (`eyJ0b3BpYyI6...` is `{"topic":...`). `host.json` set `messageEncoding: none` on the wrong assumption of plain JSON, so the handler received base64. Unit tests built messages by hand as plain JSON and could not catch it.
+- **Fix:** `messageEncoding` is `base64` (the default) so the host decodes the message first; the test and ADR 002 were corrected.
+- **Prevention:** peek a real message (`peek_messages` does not dequeue) before fixing a trigger assumption; the first real event is the integration test for the queue format.
