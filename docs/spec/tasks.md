@@ -126,6 +126,7 @@ Guard rails: DEPLOY PAUSE after Phase 6. No `git push`, `terraform apply` or res
 - [x] 7.5 Deploy function code, upload web.
   Verify: pipeline app lists backfill, daily_ingest and enrich; API app lists api; `config.js`, `index.html` and `styles.css` are in `$web`. `deploy_functions.py` fixed for exit code 3 (runbook incident 13), 181 tests pass, ruff clean.
 - [ ] 7.6 Backfill 10 days; poison queue empty.
+  Progress: canary of 1 chunk, then 9 more; `raw=10`, `processed=10`, `enrich` queue empty, 500 reviews classified (incidents 14 and 15 fixed on the way). **Open:** `enrich-poison` still holds 1 stale message from before the base64 fix; deleting it needs the owner's OK.
 - [ ] 7.7 `smoke_test.py` passes; dashboard URL opens with real data.
   Verify each step by its own output; log every real error to the runbook.
 
