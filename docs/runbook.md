@@ -1,6 +1,6 @@
 # Runbook
 
-Status: incidents 1-17 are real errors from this build. The procedures below were written after the first deployment; each one says whether it has been exercised on the live environment.
+Status: incidents 1-18 are real errors from this build. The procedures below were written after the first deployment; each one says whether it has been exercised on the live environment.
 
 ## Procedures
 
@@ -134,3 +134,9 @@ All commands are PowerShell. Names come from `terraform -chdir=terraform/envs/de
 - **Root cause:** on Windows the `checkov.cmd` launcher starts the Python registered for `.py` files, not the interpreter of `.venv-checkov`.
 - **Fix:** `tasks.py` runs `<venv python> -m checkov.main`. Result after the Phase 7 Terraform changes: 62 passed, 0 failed, 40 skipped (each skip justified inline).
 - **Prevention:** call tools through a specific interpreter (`python -m ...`) instead of generated launchers.
+
+### 18. `azure/login` fails with `AADSTS700213: No matching federated identity record`
+- **Symptom:** the first Deploy run failed at `azure/login`; every later step was skipped. The token's subject was `repo:<owner>@<owner id>/<repo>@<repo id>:ref:refs/heads/main`.
+- **Root cause:** repositories created recently carry immutable numeric ids in the OIDC subject. The federated credentials expected the plain `repo:<owner>/<repo>:...` form, so Entra found no match.
+- **Fix:** new bootstrap variable `github_oidc_repo` (`owner@<id>/repo@<id>`, from `gh api repos/<owner>/<repo>`); `terraform apply` updated the two credentials in place (0 add, 2 change, 0 destroy).
+- **Prevention:** read the `subject claim` line of a failed `azure/login` log, and compare it with `az identity federated-credential list` before the first push.

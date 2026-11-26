@@ -34,6 +34,10 @@ These are not credentials either, but they identify you, so they are kept out of
 | `ALERT_EMAIL` | address that receives alerts (Terraform `alert_email`) |
 | `DATA_ADMIN_OBJECT_IDS` | JSON list such as `["<your user object id>", "<principal_id_apply>"]`. The apply identity needs data access so the smoke test can read blobs and the poison queue |
 
+## OIDC subject of new repositories
+
+Recently created repositories put immutable ids in the token subject (`repo:<owner>@<owner id>/<repo>@<repo id>:ref:refs/heads/main`). Set `github_oidc_repo` in `terraform/bootstrap/terraform.tfvars` to `owner@<owner id>/repo@<repo id>` (`gh api repos/<owner>/<repo> --jq '"\(.owner.login)@\(.owner.id)/\(.name)@\(.id)"'`) and apply the bootstrap stack before the first push. If `azure/login` fails with `AADSTS700213`, the log prints the subject that was presented. See `docs/runbook.md`, incident 18.
+
 ## First-time order
 
 1. Run `terraform/bootstrap` locally once (see the Phase 7 checklist in `docs/spec/tasks.md`).

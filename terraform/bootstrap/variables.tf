@@ -13,6 +13,17 @@ variable "github_repo" {
   }
 }
 
+variable "github_oidc_repo" {
+  description = "Repository part of the GitHub OIDC subject when it differs from github_repo. New repositories present immutable ids, e.g. owner@<owner id>/repo@<repo id> (see docs/github-setup.md). Null uses github_repo."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.github_oidc_repo == null || can(regex("^[A-Za-z0-9_.@-]+/[A-Za-z0-9_.@-]+$", var.github_oidc_repo))
+    error_message = "github_oidc_repo must look like owner@id/repo@id."
+  }
+}
+
 variable "state_resource_group_name" {
   description = "Resource group for the Terraform state account and the CI identities."
   type        = string

@@ -1,3 +1,8 @@
 # Copy to terraform.tfvars (git-ignored) and fill in. Never commit the real file.
 location    = "southeastasia" # must be an allowed region, see docs/feasibility.md
 github_repo = "your-github-user/reviewlens-azure-serverless"
+
+# New GitHub repositories put immutable ids in the OIDC subject. Read them with
+#   gh api repos/<owner>/<repo> --jq '"\(.owner.login)@\(.owner.id)/\(.name)@\(.id)"'
+# and leave this out only if a failed azure/login shows the plain owner/repo subject.
+# github_oidc_repo = "your-github-user@123456/reviewlens-azure-serverless@789012"

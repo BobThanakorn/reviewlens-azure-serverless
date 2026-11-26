@@ -16,6 +16,7 @@ locals {
 
   github_issuer   = "https://token.actions.githubusercontent.com"
   github_audience = ["api://AzureADTokenExchange"]
+  oidc_repo       = coalesce(var.github_oidc_repo, var.github_repo)
 
   # Role definition ids (GUIDs) the apply identity may hand out inside the app resource group.
   # Anything else is refused by the ABAC condition below, so a compromised pipeline cannot
@@ -141,7 +142,7 @@ resource "azurerm_federated_identity_credential" "plan" {
   user_assigned_identity_id = azurerm_user_assigned_identity.plan.id
   issuer                    = local.github_issuer
   audience                  = local.github_audience
-  subject                   = "repo:${var.github_repo}:pull_request"
+  subject                   = "repo:${local.oidc_repo}:pull_request"
 }
 
 resource "azurerm_federated_identity_credential" "apply" {
@@ -149,7 +150,7 @@ resource "azurerm_federated_identity_credential" "apply" {
   user_assigned_identity_id = azurerm_user_assigned_identity.apply.id
   issuer                    = local.github_issuer
   audience                  = local.github_audience
-  subject                   = "repo:${var.github_repo}:ref:refs/heads/main"
+  subject                   = "repo:${local.oidc_repo}:ref:refs/heads/main"
 }
 
 # ---- plan identity: read-only. `terraform plan -lock=false` is used in CI because taking the
