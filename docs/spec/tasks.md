@@ -1,6 +1,6 @@
 # Tasks
 
-Current phase: **DEPLOY PAUSE reached (Phases 1-6 done locally).** Phase 0 is complete (provider: openai, gpt-5-nano, southeastasia). Wait for the user's "deploy".
+Current phase: **Phase 10 (final verification).** Deployed to dev and pushed; Deploy workflow green. Phase 0 provider: openai, gpt-5-nano, southeastasia.
 Status: DRAFT plan, awaiting approval. Tick a task only after its **Verify** step passes, then commit (Conventional Commits).
 Guard rails: DEPLOY PAUSE after Phase 6. No `git push`, `terraform apply` or resource-changing `az` command before the user writes "deploy". Max 20 reviews through a real classifier during development.
 
@@ -145,7 +145,7 @@ Guard rails: DEPLOY PAUSE after Phase 6. No `git push`, `terraform apply` or res
 
 ## Phase 10. Final verification
 - [ ] 10.1 Walk the Definition of Done (brief section 15) item by item.
-  Status 2026-11-26: lint/tests (184, 95%) done; fmt/validate/tflint/checkov done in 6.3 and fmt/validate re-run after each Terraform change; dev deployed and timer registered; 10-day backfill processed; smoke test passes except the poison-queue check (1 stale message, owner deletes); dashboard serves real data (API + CORS checked); evaluation and feasibility have real numbers; README and docs written; history scan clean. **Open:** first push and green CI/deploy runs, action group e-mail confirmation.
+  Status 2026-11-26: lint/tests (184, 95%) done; fmt/validate/tflint/checkov done in 6.3 and fmt/validate re-run after each Terraform change; dev deployed and timer registered; 10-day backfill processed; smoke test passes except the poison-queue check (1 stale message, owner deletes); dashboard serves real data (API + CORS checked); evaluation and feasibility have real numbers; README and docs written; history scan clean. First push done 2026-11-26. Deploy run 1 failed at `azure/login` (immutable-id OIDC subject, runbook incident 18); after the bootstrap fix, run 2 was green end to end (checks, apply, publish, smoke test with `API routes OK` and `poison queue empty`). The CI plan showed only the git-ignored `web/config.js` as new on the runner, no Azure change. **Open:** action group e-mail confirmation (owner), the first pull request to see the `Plan` job, final report.
 - [x] 10.2 Secret scan of the working tree and git history.
   Verify: e-mail, subscription and tenant ids, all client/object ids, state account name and key/token patterns: 0 hits in history and tree; only built-in role definition GUIDs in `terraform/bootstrap/main.tf`.
 - [ ] 10.3 Final report in Thai (brief section 16).
