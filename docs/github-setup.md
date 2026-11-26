@@ -19,9 +19,9 @@ Everything here is set by you in the GitHub UI or with `gh`. Nothing in this fil
 | `AZURE_LOCATION` | your allowed region (docs/feasibility.md) | Terraform `location` |
 | `TFSTATE_RESOURCE_GROUP` | bootstrap output `state_resource_group_name` | Terraform backend |
 | `TFSTATE_STORAGE_ACCOUNT` | bootstrap output `state_storage_account_name` | Terraform backend |
-| `CLASSIFIER_PROVIDER` (optional) | `openai` or `language`, default `language` | Terraform |
+| `CLASSIFIER_PROVIDER` (optional) | `openai` or `language`, default `openai` (ADR 000). Set it explicitly: changing it replaces the AI account | Terraform |
 | `ENABLE_BUDGET` (optional) | `true` only if budgets work on your subscription, default `false` | Terraform |
-| `SMOKE_BACKFILL_DAYS` (optional) | default `3` | smoke test |
+| `SMOKE_BACKFILL_DAYS` (optional) | default `3`; use `0` once the 10 source chunks are ingested | smoke test |
 
 None of these is a credential: the workflows log in with short-lived OIDC tokens.
 

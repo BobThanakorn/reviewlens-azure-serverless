@@ -29,7 +29,7 @@ jobs:
       ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
       TF_VAR_location: ${{ vars.AZURE_LOCATION }}
-      TF_VAR_classifier_provider: ${{ vars.CLASSIFIER_PROVIDER || 'language' }}
+      TF_VAR_classifier_provider: ${{ vars.CLASSIFIER_PROVIDER || 'openai' }}
       TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
       TF_VAR_data_admin_object_ids: ${{ secrets.DATA_ADMIN_OBJECT_IDS || '[]' }}
     steps:

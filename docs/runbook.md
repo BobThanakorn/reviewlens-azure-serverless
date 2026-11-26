@@ -122,3 +122,9 @@ All commands are PowerShell. Names come from `terraform -chdir=terraform/envs/de
 - **Root cause:** Event Grid writes the event to a Storage queue as **base64 text** (`eyJ0b3BpYyI6...` is `{"topic":...`). `host.json` set `messageEncoding: none` on the wrong assumption of plain JSON, so the handler received base64. Unit tests built messages by hand as plain JSON and could not catch it.
 - **Fix:** `messageEncoding` is `base64` (the default) so the host decodes the message first; the test and ADR 002 were corrected.
 - **Prevention:** peek a real message (`peek_messages` does not dequeue) before fixing a trigger assumption; the first real event is the integration test for the queue format.
+
+### 16. Workflows defaulted to the wrong AI provider
+- **Symptom:** none in production; found while setting GitHub variables before the first push. `ci.yml`, `deploy.yml` and `destroy.yml` used `vars.CLASSIFIER_PROVIDER || 'language'`.
+- **Root cause:** the fallback was written before ADR 000 chose `openai`. With the variable unset, the first CI apply would have switched the provider and replaced the OpenAI account with a Language account.
+- **Fix:** the fallback is `openai` (same as the Terraform default), and `docs/github-setup.md` says to set the variable explicitly.
+- **Prevention:** compare every workflow default with the Terraform variable default when a decision changes.
