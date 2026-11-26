@@ -1,5 +1,13 @@
 {
   "permissions": {
+    "allow": [
+      "Bash(git push *)",
+      "Bash(terraform apply *)",
+      "Bash(terraform * apply *)",
+      "PowerShell(git push *)",
+      "PowerShell(terraform apply *)",
+      "PowerShell(terraform * apply *)"
+    ],
     "deny": [
       "Bash(terraform destroy *)",
       "Bash(terraform * destroy)",

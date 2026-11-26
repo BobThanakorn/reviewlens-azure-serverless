@@ -1,6 +1,6 @@
 # Runbook
 
-Status: incidents 1-19 are real errors from this build. The procedures below were written after the first deployment; each one says whether it has been exercised on the live environment.
+Status: incidents 1-20 are real errors from this build. The procedures below were written after the first deployment; each one says whether it has been exercised on the live environment.
 
 ## Procedures
 
@@ -147,3 +147,9 @@ All commands are PowerShell. Names come from `terraform -chdir=terraform/envs/de
 - **Fix:** custom role `rl-plan-refresh` with exactly those two actions, assigned on the dev resource group only (bootstrap stack, `azurerm_role_definition.plan_refresh`).
 - **Trade-off:** `config/list/action` lets a same-repository pull request read the app settings. They hold only account names and client ids, no secrets. Fork pull requests do not run the plan job.
 - **Prevention:** run the plan job once on a real PR before relying on it; add actions one at a time from the error text, never widen to Contributor.
+
+### 20. Recreating the GitHub repository breaks `azure/login` until the OIDC subject is updated
+- **Symptom:** none yet when it was caught: the repository was deleted and recreated (to drop old history), and the new repository has new numeric ids.
+- **Root cause:** the federated credentials contain the immutable ids of the repository (incident 18), so credentials for the old repository do not match the new one.
+- **Fix:** read the new ids with `gh api repos/<owner>/<repo>`, update `github_oidc_repo` in `terraform/bootstrap/terraform.tfvars`, apply the bootstrap stack (2 credentials changed in place), then set the variables and secrets of `docs/github-setup.md` and push. The first Deploy on the new repository was green.
+- **Prevention:** do the bootstrap apply before the first push of any new repository.
