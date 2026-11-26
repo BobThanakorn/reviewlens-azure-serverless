@@ -24,9 +24,10 @@ resource "azurerm_eventgrid_system_topic" "storage" {
   }
 }
 
-# Storage Queue Data Message Sender, scoped to the single queue it writes to.
+# Storage Queue Data Message Sender on the data account. Event Grid validates delivery at account
+# scope; a queue-scoped assignment was rejected at deploy (docs/adr/009-eventgrid-role-at-account-scope.md).
 resource "azurerm_role_assignment" "topic_sends_to_queue" {
-  scope                = var.queue_id
+  scope                = var.storage_account_id
   role_definition_name = "Storage Queue Data Message Sender"
   principal_id         = azurerm_eventgrid_system_topic.storage.identity[0].principal_id
 }

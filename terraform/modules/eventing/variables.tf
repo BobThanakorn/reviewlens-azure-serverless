@@ -18,11 +18,6 @@ variable "storage_account_id" {
   type        = string
 }
 
-variable "queue_id" {
-  description = "ARM resource id of the queue that receives the events (role scope)."
-  type        = string
-}
-
 variable "queue_name" {
   description = "Name of the queue that receives the events."
   type        = string

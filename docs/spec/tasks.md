@@ -113,11 +113,15 @@ Guard rails: DEPLOY PAUSE after Phase 6. No `git push`, `terraform apply` or res
 
 ## Phase 7. Deploy (after "deploy")
 
-- [ ] 7.0 Human checklist in Thai (az login, region and provider confirm, `alert_email`, GitHub repo + variables, provider registration, Hugging Face login only if needed). Wait for confirmation.
-- [ ] 7.1 `az account show`, show the subscription name.
-- [ ] 7.2 Bootstrap apply (plan shown first, wait for confirmation, flag recurring cost).
-- [ ] 7.3 `bootstrap_data.py` upload (500 reviews, 10 chunks).
-- [ ] 7.4 `envs/dev` plan → confirmation → apply.
+- [x] 7.0 Human checklist in Thai (az login, region and provider confirm, `alert_email`, GitHub repo + variables, provider registration, Hugging Face login only if needed). Wait for confirmation.
+  Verify: user confirmed region `southeastasia`, provider `openai`, repo and alert e-mail.
+- [x] 7.1 `az account show`, show the subscription name.
+  Verify: "Azure for Students", state Enabled.
+- [x] 7.2 Bootstrap apply (plan shown first, wait for confirmation, flag recurring cost).
+  Verify: plan 15 to add shown and confirmed; apply complete 15 added, 0 changed, 0 destroyed. No always-on-cost resource.
+- [x] 7.4 `envs/dev` plan → confirmation → apply. **Moved before the data upload:** the data storage account is created by `envs/dev`, and `bootstrap_data.py` needs its URL.
+  Verify: plan 48 to add shown and confirmed; apply needed three rounds (incidents 11 and 12 in `docs/runbook.md`, ADR 009); final state has all 48 resources, outputs returned, `fmt`/`validate` pass. Alert e-mail confirmation of the action group is still pending on the user.
+- [ ] 7.3 `bootstrap_data.py` upload (500 reviews, 10 chunks), after 7.4.
 - [ ] 7.5 Deploy function code, upload web.
 - [ ] 7.6 Backfill 10 days; poison queue empty.
 - [ ] 7.7 `smoke_test.py` passes; dashboard URL opens with real data.

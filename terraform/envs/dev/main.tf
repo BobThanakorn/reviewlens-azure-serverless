@@ -130,7 +130,6 @@ module "eventing" {
   resource_group_name = local.rg
   location            = local.region
   storage_account_id  = module.storage.id
-  queue_id            = module.storage.queue_ids["enrich"]
   tags                = local.tags
 }
 

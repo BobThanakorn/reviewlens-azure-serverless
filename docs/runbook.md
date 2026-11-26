@@ -63,3 +63,15 @@ Status: incidents are added as they happen during the build. Operating procedure
 - **Root cause:** the Claude Code permission classifier treats RBAC changes as sensitive; the project rules also deny `az role assignment delete` and `az group delete`.
 - **Fix:** the owner ran the one command in their own terminal. Cleanup relied on deleting the resource, which removes role assignments scoped to it. The empty temporary resource group is removed by the owner with `az group delete`.
 - **Prevention:** keep RBAC in Terraform; for manual tests, ask the owner to run the single `az role assignment create`.
+
+### 11. `MissingSubscriptionRegistration` on the first `terraform apply`
+- **Symptom:** the apply of `envs/dev` stopped with `409 MissingSubscriptionRegistration: The subscription is not registered to use namespace 'Microsoft.Web'` (also `Microsoft.OperationalInsights`, `microsoft.insights`). 34 of 48 resources were already created.
+- **Root cause:** a new Azure for Students subscription has only some resource providers registered, and the provider is configured with `resource_provider_registrations = "none"` (ADR 008). `terraform plan` does not ask ARM about registration, so it passed.
+- **Fix:** register the providers once (`az provider register --namespace <name>`) for `Microsoft.Web`, `Microsoft.OperationalInsights`, `microsoft.insights`, `Microsoft.EventGrid` and `Microsoft.AlertsManagement`, wait until `registrationState` is `Registered`, then plan and apply again. Terraform created only the 15 missing resources; nothing was deleted.
+- **Prevention:** the deploy checklist (task 7.0) lists provider registration; check `az provider show -n <ns> --query registrationState` before the first apply.
+
+### 12. Event Grid subscription: `Managed Identity Authorization Error`
+- **Symptom:** creating `raw-jsonl-to-enrich-queue` failed three times over more than 10 minutes with `Managed identity for event subscription does not have authorization to deliver to the endpoint`.
+- **Root cause:** the role `Storage Queue Data Message Sender` was assigned to the topic identity on the `enrich` queue only. Read-only checks showed the assignment existed and matched the topic's principal, so it was not RBAC propagation. Event Grid expects the role on the storage account (ADR 009).
+- **Fix:** scope the role assignment to the data storage account in `modules/eventing`; Terraform replaced the assignment and the subscription was created at the first attempt.
+- **Prevention:** do not retry the same apply hoping for propagation; after one retry, compare the role scope with the service documentation.

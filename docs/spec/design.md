@@ -124,7 +124,7 @@ Business logic lives in plain modules; `function_app.py` stays a thin binding la
 | func-pipeline MI | Storage Blob Data Owner + Queue Data Contributor | its own host/deployment storage account (no business data) |
 | func-api MI | Storage Blob Data Reader | `processed` container only |
 | func-api MI | Storage Blob Data Owner + Queue Data Contributor | its own host/deployment storage account (no business data) |
-| Event Grid system topic MI | Storage Queue Data Message Sender | `enrich` queue (managed-identity delivery) |
+| Event Grid system topic MI | Storage Queue Data Message Sender | data storage account (managed-identity delivery; ADR 009) |
 | Deploying user (var) | Storage Blob Data Contributor | `source` container (for `bootstrap_data.py`, since Owner has no data actions) |
 | GitHub apply MI | Contributor + User Access Administrator | app RG only |
 | GitHub apply MI | Storage Blob Data Contributor | state container; web `$web` for upload |
