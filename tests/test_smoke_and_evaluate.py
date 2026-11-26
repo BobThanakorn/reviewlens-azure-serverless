@@ -136,6 +136,21 @@ def test_main_writes_report_from_store(tmp_path):
     assert rc == 0 and "Accuracy" in out.read_text(encoding="utf-8")
 
 
+def test_main_embeds_the_analysis_file_when_it_exists(tmp_path):
+    import json
+
+    store = FakeStore()
+    store.write_text(
+        "processed", "dt=2026-11-25/chunk-000001.jsonl",
+        "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in SAMPLE),
+    )  # fmt: skip
+    analysis = tmp_path / "analysis.md"
+    analysis.write_text("Stars are noisy.\n", encoding="utf-8")
+    out = tmp_path / "evaluation.md"
+    assert evaluate.main(["--out", str(out), "--analysis", str(analysis)], store=store) == 0
+    assert "## Analysis\n\nStars are noisy." in out.read_text(encoding="utf-8")
+
+
 def test_main_fails_cleanly_with_no_data(tmp_path, capsys):
     rc = evaluate.main(["--out", str(tmp_path / "x.md")], store=FakeStore())
     assert rc == 1 and "nothing to evaluate" in capsys.readouterr().err

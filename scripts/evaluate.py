@@ -200,7 +200,8 @@ def main(argv: list[str] | None = None, store: Any = None) -> int:
         print("no processed reviews found; nothing to evaluate", file=sys.stderr)
         return 1
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(render(reviews), encoding="utf-8", newline="\n")
+    analysis = args.analysis.read_text(encoding="utf-8") if args.analysis.is_file() else None
+    args.out.write_text(render(reviews, analysis=analysis), encoding="utf-8", newline="\n")
     stats = accuracy_stats(reviews)
     print(f"wrote {args.out}: {stats['sample_size']} reviews, accuracy {stats['accuracy']:.1%}")
     return 0
