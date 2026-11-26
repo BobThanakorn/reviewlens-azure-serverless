@@ -1,6 +1,6 @@
 # Runbook
 
-Status: incidents 1-18 are real errors from this build. The procedures below were written after the first deployment; each one says whether it has been exercised on the live environment.
+Status: incidents 1-19 are real errors from this build. The procedures below were written after the first deployment; each one says whether it has been exercised on the live environment.
 
 ## Procedures
 
@@ -140,3 +140,10 @@ All commands are PowerShell. Names come from `terraform -chdir=terraform/envs/de
 - **Root cause:** repositories created recently carry immutable numeric ids in the OIDC subject. The federated credentials expected the plain `repo:<owner>/<repo>:...` form, so Entra found no match.
 - **Fix:** new bootstrap variable `github_oidc_repo` (`owner@<id>/repo@<id>`, from `gh api repos/<owner>/<repo>`); `terraform apply` updated the two credentials in place (0 add, 2 change, 0 destroy).
 - **Prevention:** read the `subject claim` line of a failed `azure/login` log, and compare it with `az identity federated-credential list` before the first push.
+
+### 19. `Terraform plan` on a pull request fails with 403 `AuthorizationFailed`
+- **Symptom:** the first PR's `plan` job failed: `does not have authorization to perform action 'Microsoft.Web/sites/config/list/action'` (both Function Apps) and `'Microsoft.EventGrid/systemTopics/eventSubscriptions/getFullUrl/action'`.
+- **Root cause:** the read-only plan identity had the built-in Reader role. Reader covers GET reads but not the POST "list" actions that Terraform calls while refreshing app settings and the Event Grid delivery URL. Not visible from the code; only a real PR run shows it.
+- **Fix:** custom role `rl-plan-refresh` with exactly those two actions, assigned on the dev resource group only (bootstrap stack, `azurerm_role_definition.plan_refresh`).
+- **Trade-off:** `config/list/action` lets a same-repository pull request read the app settings. They hold only account names and client ids, no secrets. Fork pull requests do not run the plan job.
+- **Prevention:** run the plan job once on a real PR before relying on it; add actions one at a time from the error text, never widen to Contributor.

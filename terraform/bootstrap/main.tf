@@ -162,6 +162,30 @@ resource "azurerm_role_assignment" "plan_reader" {
   principal_id         = azurerm_user_assigned_identity.plan.principal_id
 }
 
+# Reader does not cover POST "list" actions, which `terraform plan` needs while refreshing the
+# Function Apps (app settings) and the Event Grid subscription (delivery URL). Found on the first
+# pull request (docs/runbook.md, incident 19). Only these two actions, only on the dev resource group.
+resource "azurerm_role_definition" "plan_refresh" {
+  name        = "${var.name_prefix}-plan-refresh"
+  scope       = local.app_rg_scope
+  description = "Extra read-style actions that terraform plan needs on the dev resource group."
+
+  permissions {
+    actions = [
+      "Microsoft.Web/sites/config/list/action",
+      "Microsoft.EventGrid/systemTopics/eventSubscriptions/getFullUrl/action",
+    ]
+  }
+
+  assignable_scopes = [local.app_rg_scope]
+}
+
+resource "azurerm_role_assignment" "plan_refresh" {
+  scope              = local.app_rg_scope
+  role_definition_id = azurerm_role_definition.plan_refresh.role_definition_resource_id
+  principal_id       = azurerm_user_assigned_identity.plan.principal_id
+}
+
 resource "azurerm_role_assignment" "plan_state_reader" {
   scope                = local.state_container_scope
   role_definition_name = "Storage Blob Data Reader"
